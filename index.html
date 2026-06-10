@@ -204,8 +204,24 @@ td{padding:6px 9px;border-bottom:1px solid #eee;color:#2c2c2c}
 <div class="main"><div id="pvArea"><div class="doc" style="display:flex;align-items:center;justify-content:center;min-height:500px"><div style="text-align:center;color:var(--gray);opacity:.4"><div style="font-size:40px">⚖️</div><div style="font-size:9pt;margin-top:10px">Fill in the fields on the left<br>to preview the Operating Agreement</div></div></div></div></div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
 <script>
+// Load docx library dynamically with fallback
+(function(){
+  var urls = [
+    'https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js',
+    'https://unpkg.com/docx@8.5.0/build/index.umd.js'
+  ];
+  var idx = 0;
+  function tryLoad(){
+    if(idx >= urls.length){ document.getElementById('stMsg').className='stmsg err'; document.getElementById('stMsg').textContent='Failed to load library. Please refresh.'; return; }
+    var s = document.createElement('script');
+    s.src = urls[idx++];
+    s.onload = function(){ document.getElementById('genBtn').textContent='⬇ Download .docx'; document.getElementById('stMsg').textContent=''; };
+    s.onerror = function(){ tryLoad(); };
+    document.head.appendChild(s);
+  }
+  tryLoad();
+})();
 var llcType = 'single';
 var smData = {name:'',addr:'',cash:'',prop:'N/A',propVal:'0'};
 var mmData = [{name:'',addr:'',pct:'',cash:'',prop:'N/A',propVal:'0'},{name:'',addr:'',pct:'',cash:'',prop:'N/A',propVal:'0'}];
@@ -682,9 +698,10 @@ function doGen(){
   }
 }
 
-renderSM();
-rp();
+window.addEventListener('DOMContentLoaded', function(){
+  renderSM();
+  rp();
+});
 </script>
 </body>
 </html>
-
