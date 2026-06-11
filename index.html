@@ -4,53 +4,54 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Dominium – Delaware OA Generator</title>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Inter:wght@400;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',Arial,sans-serif;display:flex;min-height:100vh;background:#eaedf0}
 
-/* SIDEBAR */
-#sidebar{width:300px;min-width:300px;background:#0C3652;padding:18px 14px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+#sidebar{width:310px;min-width:310px;background:#0C3652;padding:18px 14px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
 .logo-name{font-family:'Audiowide',Arial,sans-serif;color:#DAA142;font-size:14pt;letter-spacing:1px}
 .logo-sub{color:#999;font-size:7pt;letter-spacing:3px;text-transform:uppercase;margin-top:2px}
 .logo-line{height:1px;background:linear-gradient(to right,#DAA142,transparent);margin:8px 0 2px}
 .sec-head{color:#FFCA69;font-size:6pt;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-top:4px}
 .divider{height:1px;background:rgba(218,161,66,.15)}
 .field{display:flex;flex-direction:column;gap:3px}
-.field label{color:rgba(255,255,255,.65);font-size:6pt;font-weight:600;letter-spacing:1.5px;text-transform:uppercase}
-.field input, .field select{background:rgba(255,255,255,.08);border:1px solid rgba(218,161,66,.25);color:#fff;font-family:'Inter',Arial,sans-serif;font-size:8pt;padding:7px 9px;border-radius:3px;outline:none;width:100%}
-.field input:focus, .field select:focus{border-color:#DAA142}
+.field-label{color:rgba(255,255,255,.65);font-size:6pt;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;display:flex;align-items:center;gap:4px}
+.field input,.field select,.field textarea{background:rgba(255,255,255,.08);border:1px solid rgba(218,161,66,.25);color:#fff;font-family:'Inter',Arial,sans-serif;font-size:8pt;padding:7px 9px;border-radius:3px;outline:none;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#DAA142}
 .field select option{background:#0C3652}
-.field input::placeholder{color:rgba(255,255,255,.25)}
+.field input::placeholder,.field textarea::placeholder{color:rgba(255,255,255,.25)}
+.field textarea{resize:vertical;min-height:60px}
 input[type=file]{padding:5px;color:#999;cursor:pointer}
 input[type=file]::file-selector-button{background:#DAA142;color:#0C3652;border:none;padding:4px 10px;font-size:7pt;font-weight:700;border-radius:2px;cursor:pointer;margin-right:8px}
 
-/* type toggle */
+/* tooltip */
+.tip{position:relative;display:inline-flex;align-items:center}
+.tip-icon{width:14px;height:14px;border-radius:50%;background:rgba(218,161,66,.18);border:1px solid rgba(218,161,66,.4);color:#DAA142;font-size:8pt;font-weight:700;font-style:normal;cursor:help;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;user-select:none}
+.tip-box{position:absolute;left:18px;top:50%;transform:translateY(-50%);background:#091e2e;color:#ddd;font-size:7.5pt;line-height:1.5;padding:9px 11px;border-radius:5px;border:1px solid rgba(218,161,66,.3);width:200px;pointer-events:none;opacity:0;transition:opacity .18s;z-index:9999;white-space:normal;font-weight:400;letter-spacing:.2px;text-transform:none}
+.tip:hover .tip-box{opacity:1}
+
 .type-toggle{display:flex;gap:6px}
 .type-btn{flex:1;padding:8px 4px;border:1px solid rgba(218,161,66,.3);background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);font-family:'Inter',Arial,sans-serif;font-size:7pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:3px;cursor:pointer}
 .type-btn.active{background:#DAA142;color:#0C3652;border-color:#DAA142}
 
-/* member card */
 .member-card{background:rgba(255,255,255,.05);border:1px solid rgba(218,161,66,.2);border-radius:4px;padding:10px;display:flex;flex-direction:column;gap:8px;margin-bottom:8px;position:relative}
 .member-card-title{color:#DAA142;font-size:6.5pt;font-weight:700;letter-spacing:2px;text-transform:uppercase}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .remove-btn{position:absolute;top:8px;right:8px;background:rgba(218,161,66,.15);border:none;color:#DAA142;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12pt;display:flex;align-items:center;justify-content:center;line-height:1}
 .add-btn{background:rgba(218,161,66,.08);border:1px dashed rgba(218,161,66,.3);color:#DAA142;font-size:7.5pt;font-weight:600;letter-spacing:1px;padding:8px;border-radius:3px;cursor:pointer;text-transform:uppercase;font-family:'Inter',Arial,sans-serif;width:100%}
 
-/* generate button */
 .gen-btn{background:linear-gradient(135deg,#DAA142,#BC8729);color:#0C3652;border:none;padding:13px;font-family:'Inter',Arial,sans-serif;font-size:8pt;font-weight:700;letter-spacing:2px;text-transform:uppercase;border-radius:3px;cursor:pointer;margin-top:6px;width:100%}
 .gen-btn:hover{opacity:.9}
+.gen-btn:disabled{opacity:.45;cursor:not-allowed}
 .status{font-size:7pt;text-align:center;min-height:16px;color:#999;letter-spacing:.5px}
 .status.ok{color:#6fcf8a}
 .status.err{color:#e07070}
-
-/* hidden */
 .hidden{display:none!important}
 
-/* PREVIEW */
 #preview-area{flex:1;padding:24px;overflow-y:auto;display:flex;justify-content:center;align-items:flex-start}
 
-/* DOCUMENT */
 .doc{background:#fff;width:680px;max-width:100%;box-shadow:0 4px 24px rgba(0,0,0,.13);font-family:Arial,sans-serif;font-size:9pt;line-height:1.75;color:#1a1a1a}
 .doc-cover{background:#0C3652;padding:48px 52px 36px;min-height:300px;display:flex;flex-direction:column;justify-content:space-between}
 .cover-logo-text{font-family:'Audiowide',Arial,sans-serif;color:#DAA142;font-size:15pt;letter-spacing:2px}
@@ -68,7 +69,6 @@ input[type=file]::file-selector-button{background:#DAA142;color:#0C3652;border:n
 .sec-num{color:#DAA142;font-weight:700;margin-right:5px}
 .doc-p{margin-bottom:9px;color:#2c2c2c;text-align:justify;font-size:8.5pt}
 .exhibit-banner{background:#0C3652;color:#DAA142;font-family:'Audiowide',Arial,sans-serif;font-size:8pt;letter-spacing:.8px;padding:10px 18px;margin:24px -52px 18px;text-align:center}
-/* sig blocks */
 .sig-block{margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid #eee}
 .sig-role{font-size:7pt;color:#999;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px;font-weight:600}
 .sig-name-label{font-size:8pt;color:#555;margin-bottom:3px}
@@ -77,7 +77,6 @@ input[type=file]::file-selector-button{background:#DAA142;color:#0C3652;border:n
 .sig-line-item{flex:1}
 .sig-line-label{font-size:7pt;color:#999;margin-bottom:4px}
 .sig-line-blank{border-bottom:1px solid #bbb;height:22px}
-/* notary */
 .notary-block{margin-top:32px;padding:18px;border:1px solid rgba(12,54,82,.15);border-radius:4px;background:#f9f7f2}
 .notary-title{font-family:'Audiowide',Arial,sans-serif;font-size:8pt;color:#0C3652;margin-bottom:14px;padding-bottom:7px;border-bottom:1px solid #DAA142}
 .notary-row{display:flex;gap:20px;margin-bottom:12px}
@@ -93,19 +92,16 @@ input[type=file]::file-selector-button{background:#DAA142;color:#0C3652;border:n
 .notary-comm-row{display:flex;gap:20px;margin-top:12px}
 .notary-comm-item{flex:1;font-size:8.5pt}
 .notary-comm-label{color:#DAA142;font-weight:700;margin-right:4px}
-/* table */
 .doc-table{width:100%;border-collapse:collapse;margin:8px 0 13px;font-size:8.5pt}
 .doc-table th{background:#0C3652;color:#DAA142;font-size:7pt;letter-spacing:1.5px;text-transform:uppercase;padding:7px 9px;text-align:left}
 .doc-table td{padding:6px 9px;border-bottom:1px solid #eee;color:#2c2c2c}
 .doc-table tr.total td{font-weight:700;background:#f9f7f2;color:#0C3652;border-top:2px solid #DAA142}
-/* footer */
 .doc-footer{background:#0C3652;padding:10px 52px;display:flex;justify-content:space-between;align-items:center}
 .doc-footer span{color:rgba(255,255,255,.3);font-size:7pt;letter-spacing:1px;text-transform:uppercase}
 .doc-footer .pg{color:#DAA142;font-size:8pt}
 .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:6.5pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px}
 .badge-single{background:rgba(218,161,66,.12);color:#DAA142;border:1px solid rgba(218,161,66,.35)}
 .badge-multi{background:rgba(12,54,82,.1);color:#0C3652;border:1px solid rgba(12,54,82,.25)}
-.state-note{background:rgba(12,54,82,.05);border-left:3px solid #DAA142;padding:9px 13px;font-size:8.5pt;color:#555;font-style:italic;margin-bottom:9px}
 </style>
 </head>
 <body>
@@ -128,38 +124,67 @@ input[type=file]::file-selector-button{background:#DAA142;color:#0C3652;border:n
   <div style="background:rgba(218,161,66,.08);border-left:3px solid #DAA142;padding:6px 10px;font-size:7pt;color:#DAA142">State: Delaware</div>
 
   <div class="field">
-    <label>Company Name (no LLC)</label>
+    <div class="field-label">Company Name (no LLC)
+      <span class="tip"><i class="tip-icon">i</i><span class="tip-box">Enter the name WITHOUT "LLC" — it is added automatically. E.g. "Acme Holdings", not "Acme Holdings LLC".</span></span>
+    </div>
     <input type="text" id="f-coname" placeholder="e.g. Acme Holdings" oninput="updatePreview()">
   </div>
+
   <div class="field">
-    <label>Date of Formation (Effective Date)</label>
+    <div class="field-label">Date of Formation (Effective Date)
+      <span class="tip"><i class="tip-icon">i</i><span class="tip-box">The date the LLC was officially registered with the Delaware Division of Corporations. This is the legal birth date of the company.</span></span>
+    </div>
     <input type="text" id="f-dateform" placeholder="e.g. January 15, 2026" oninput="updatePreview()">
   </div>
+
   <div class="field">
-    <label>Date of Agreement (Execution Date)</label>
+    <div class="field-label">Date of Agreement (Execution Date)
+      <span class="tip"><i class="tip-icon">i</i><span class="tip-box">The date this Operating Agreement is signed by the member(s). May be the same as or later than the Date of Formation.</span></span>
+    </div>
     <input type="text" id="f-dateexec" placeholder="e.g. June 10, 2026" oninput="updatePreview()">
   </div>
+
   <div class="field">
-    <label>Principal Office Address</label>
+    <div class="field-label">Principal Office Address
+      <span class="tip"><i class="tip-icon">i</i><span class="tip-box">The main physical address where the LLC conducts its business and where management decisions are made.</span></span>
+    </div>
     <input type="text" id="f-addr" placeholder="Street, City, State, ZIP" oninput="updatePreview()">
   </div>
+
   <div class="field">
-    <label>Mailing Address (if different)</label>
+    <div class="field-label">Mailing Address (if different)
+      <span class="tip"><i class="tip-icon">i</i><span class="tip-box">Only fill this if the mailing address is different from the principal office. Leave blank if they are the same.</span></span>
+    </div>
     <input type="text" id="f-mail" placeholder="Leave blank if same" oninput="updatePreview()">
   </div>
+
   <div class="field">
-    <label>Registered Agent Name</label>
+    <div class="field-label">Registered Agent Name
+      <span class="tip"><i class="tip-icon">i</i><span class="tip-box">A person or company designated to receive legal documents on behalf of the LLC in Delaware. Required by law.</span></span>
+    </div>
     <input type="text" id="f-raname" placeholder="e.g. Northwest Registered Agent" oninput="updatePreview()">
   </div>
+
   <div class="field">
-    <label>Registered Agent Address</label>
+    <div class="field-label">Registered Agent Address
+      <span class="tip"><i class="tip-icon">i</i><span class="tip-box">Physical street address of the registered agent in Delaware. Must be a street address, not a P.O. Box.</span></span>
+    </div>
     <input type="text" id="f-raaddr" placeholder="Street address in Delaware" oninput="updatePreview()">
+  </div>
+
+  <div class="field">
+    <div class="field-label">Business Purpose (optional)
+      <span class="tip"><i class="tip-icon">i</i><span class="tip-box">Describe the specific business activities of the LLC. If left blank, a standard general purpose clause will be used automatically.</span></span>
+    </div>
+    <textarea id="f-purpose" placeholder="e.g. To provide international tax consulting, business structuring, and advisory services. Leave blank for standard general purpose clause." oninput="updatePreview()"></textarea>
   </div>
 
   <div class="divider"></div>
   <div class="sec-head">Brand (Optional)</div>
   <div class="field">
-    <label>Upload Logo</label>
+    <div class="field-label">Upload Logo
+      <span class="tip"><i class="tip-icon">i</i><span class="tip-box">Your company logo to appear on the cover page and document header. If left blank, the company name will appear as text.</span></span>
+    </div>
     <input type="file" id="f-logo" accept="image/*" onchange="handleLogo(this)">
     <div id="logo-thumb" style="display:none;margin-top:5px;text-align:center">
       <img id="logo-img" style="max-height:36px;max-width:200px;border-radius:3px">
@@ -170,22 +195,38 @@ input[type=file]::file-selector-button{background:#DAA142;color:#0C3652;border:n
     </div>
   </div>
 
-  <!-- SINGLE MEMBER FIELDS -->
+  <!-- SINGLE MEMBER -->
   <div id="sec-single">
     <div class="divider"></div>
     <div class="sec-head">Sole Member</div>
     <div class="member-card">
       <div class="member-card-title">Sole Member</div>
-      <div class="field"><label>Full Legal Name</label><input type="text" id="f-sm-name" placeholder="Full legal name" oninput="updatePreview()"></div>
-      <div class="field"><label>Address</label><input type="text" id="f-sm-addr" placeholder="Full address" oninput="updatePreview()"></div>
-      <div class="field"><label>Cash Contribution (USD)</label><input type="text" id="f-sm-cash" placeholder="e.g. 1,000" oninput="updatePreview()"></div>
-      <div class="field"><label>Property / Services</label><input type="text" id="f-sm-prop" placeholder="Description or N/A" oninput="updatePreview()"></div>
-      <div class="field"><label>Agreed Value of Property (USD)</label><input type="text" id="f-sm-propval" placeholder="0" oninput="updatePreview()"></div>
+      <div class="field">
+        <div class="field-label">Full Legal Name <span class="tip"><i class="tip-icon">i</i><span class="tip-box">The full legal name of the sole member as it appears on government-issued identification.</span></span></div>
+        <input type="text" id="f-sm-name" placeholder="Full legal name" oninput="updatePreview()">
+      </div>
+      <div class="field">
+        <div class="field-label">Address <span class="tip"><i class="tip-icon">i</i><span class="tip-box">The full residential or business address of the sole member.</span></span></div>
+        <input type="text" id="f-sm-addr" placeholder="Full address" oninput="updatePreview()">
+      </div>
+      <div class="field">
+        <div class="field-label">Cash Contribution (USD) <span class="tip"><i class="tip-icon">i</i><span class="tip-box">The amount of money the sole member is contributing as initial capital to the LLC.</span></span></div>
+        <input type="text" id="f-sm-cash" placeholder="e.g. 1,000" oninput="updatePreview()">
+      </div>
+      <div class="field">
+        <div class="field-label">Property / Services <span class="tip"><i class="tip-icon">i</i><span class="tip-box">If contributing non-cash assets (equipment, IP, services), describe them here. Enter N/A if contributing cash only.</span></span></div>
+        <input type="text" id="f-sm-prop" placeholder="Description or N/A" oninput="updatePreview()">
+      </div>
+      <div class="field">
+        <div class="field-label">Agreed Value of Property (USD) <span class="tip"><i class="tip-icon">i</i><span class="tip-box">The agreed dollar value of any non-cash contributions. Enter 0 if no property or services are being contributed.</span></span></div>
+        <input type="text" id="f-sm-propval" placeholder="0" oninput="updatePreview()">
+      </div>
     </div>
+
     <div class="divider"></div>
     <div class="sec-head">Management</div>
     <div class="field">
-      <label>Management Structure</label>
+      <div class="field-label">Management Structure <span class="tip"><i class="tip-icon">i</i><span class="tip-box">Member-Managed: the sole member manages the LLC directly. Manager-Managed: the member appoints a separate manager to handle day-to-day operations.</span></span></div>
       <select id="f-mgmt" onchange="onMgmtChange()">
         <option value="member">Member-Managed</option>
         <option value="manager">Manager-Managed</option>
@@ -193,44 +234,75 @@ input[type=file]::file-selector-button{background:#DAA142;color:#0C3652;border:n
     </div>
     <div id="sec-manager" class="hidden">
       <div style="display:flex;flex-direction:column;gap:9px;margin-top:4px">
-        <div class="field"><label>Manager Name</label><input type="text" id="f-mgrname" placeholder="Full legal name" oninput="updatePreview()"></div>
-        <div class="field"><label>Manager Address</label><input type="text" id="f-mgraddr" placeholder="Full address" oninput="updatePreview()"></div>
-        <div class="field"><label>Chief Executive Manager</label><input type="text" id="f-ceo-s" placeholder="Full name" oninput="updatePreview()"></div>
-        <div class="field"><label>Debt Approval Threshold (USD)</label><input type="text" id="f-debt-s" placeholder="Default: 25,000" oninput="updatePreview()"></div>
+        <div class="field">
+          <div class="field-label">Manager Name <span class="tip"><i class="tip-icon">i</i><span class="tip-box">Full legal name of the appointed manager who will handle day-to-day operations on behalf of the sole member.</span></span></div>
+          <input type="text" id="f-mgrname" placeholder="Full legal name" oninput="updatePreview()">
+        </div>
+        <div class="field">
+          <div class="field-label">Manager Address</div>
+          <input type="text" id="f-mgraddr" placeholder="Full address" oninput="updatePreview()">
+        </div>
+        <div class="field">
+          <div class="field-label">Chief Executive Manager <span class="tip"><i class="tip-icon">i</i><span class="tip-box">The manager with primary responsibility for day-to-day operations of the LLC.</span></span></div>
+          <input type="text" id="f-ceo-s" placeholder="Full name" oninput="updatePreview()">
+        </div>
+        <div class="field">
+          <div class="field-label">Debt Approval Threshold (USD) <span class="tip"><i class="tip-icon">i</i><span class="tip-box">Any debt or loan above this amount requires written approval from the Sole Member. Protects against unauthorized large financial commitments. Defaults to $25,000 if left blank.</span></span></div>
+          <input type="text" id="f-debt-s" placeholder="Default: 25,000" oninput="updatePreview()">
+        </div>
       </div>
     </div>
     <div class="field">
-      <label>Tax Contact / Responsible Party</label>
+      <div class="field-label">Tax Contact / Responsible Party <span class="tip"><i class="tip-icon">i</i><span class="tip-box">The person responsible for handling tax filings and IRS correspondence on behalf of the LLC. For a Single-Member LLC (disregarded entity), this is typically the sole member themselves.</span></span></div>
       <input type="text" id="f-taxc" placeholder="Usually the Sole Member" oninput="updatePreview()">
     </div>
   </div>
 
-  <!-- MULTI MEMBER FIELDS -->
+  <!-- MULTI MEMBER -->
   <div id="sec-multi" class="hidden">
     <div class="divider"></div>
     <div class="sec-head">Members</div>
     <div id="mm-cards"></div>
     <button class="add-btn" onclick="addMember()">+ Add Member</button>
+
     <div class="divider"></div>
     <div class="sec-head">Management</div>
-    <div class="field"><label>Chief Executive Manager</label><input type="text" id="f-ceo-m" placeholder="Full name" oninput="updatePreview()"></div>
-    <div class="field"><label>Additional Manager (optional)</label><input type="text" id="f-mgr2" placeholder="Full name (optional)" oninput="updatePreview()"></div>
-    <div class="field"><label>Partnership Representative</label><input type="text" id="f-partrep" placeholder="Full name" oninput="updatePreview()"></div>
     <div class="field">
-      <label>Voting Threshold</label>
+      <div class="field-label">Chief Executive Manager <span class="tip"><i class="tip-icon">i</i><span class="tip-box">The manager with primary responsibility for day-to-day operations. Appointed by the members and listed on Exhibit 1.</span></span></div>
+      <input type="text" id="f-ceo-m" placeholder="Full name" oninput="updatePreview()">
+    </div>
+    <div class="field">
+      <div class="field-label">Additional Manager (optional) <span class="tip"><i class="tip-icon">i</i><span class="tip-box">If the LLC has more than one manager, enter the second manager's name here. Leave blank if there is only one manager.</span></span></div>
+      <input type="text" id="f-mgr2" placeholder="Full name (optional)" oninput="updatePreview()">
+    </div>
+    <div class="field">
+      <div class="field-label">Partnership Representative <span class="tip"><i class="tip-icon">i</i><span class="tip-box">Required by the IRS (IRC §6223) for multi-member LLCs treated as partnerships. This person represents the LLC in federal tax audits. Typically the CEO or managing member.</span></span></div>
+      <input type="text" id="f-partrep" placeholder="Full name" oninput="updatePreview()">
+    </div>
+    <div class="field">
+      <div class="field-label">Voting Threshold <span class="tip"><i class="tip-icon">i</i><span class="tip-box">The minimum percentage of membership interests required to approve ordinary business decisions such as distributions, budget approvals, and bank account changes.</span></span></div>
       <select id="f-vote" onchange="updatePreview()">
         <option value="more than fifty percent (50%)">More than 50%</option>
         <option value="more than sixty-six percent (66%)">More than 66%</option>
         <option value="more than seventy-five percent (75%)">More than 75%</option>
       </select>
     </div>
-    <div class="field"><label>Debt Approval Threshold (USD)</label><input type="text" id="f-debt-m" placeholder="Default: 25,000" oninput="updatePreview()"></div>
+    <div class="field">
+      <div class="field-label">Debt Approval Threshold (USD) <span class="tip"><i class="tip-icon">i</i><span class="tip-box">Any debt or loan above this amount requires member approval beyond the normal voting threshold. Defaults to $25,000 if left blank.</span></span></div>
+      <input type="text" id="f-debt-m" placeholder="Default: 25,000" oninput="updatePreview()">
+    </div>
   </div>
 
   <div class="divider"></div>
   <div class="sec-head">Capital</div>
-  <div class="field"><label>Aggregate Initial Capital (USD)</label><input type="text" id="f-cap" placeholder="e.g. 10,000" oninput="updatePreview()"></div>
-  <div class="field"><label>Contribution Deadline (business days)</label><input type="text" id="f-days" placeholder="Default: 10" oninput="updatePreview()"></div>
+  <div class="field">
+    <div class="field-label">Aggregate Initial Capital (USD) <span class="tip"><i class="tip-icon">i</i><span class="tip-box">The total amount of money, property, or services being contributed by all members as their initial investment in the LLC.</span></span></div>
+    <input type="text" id="f-cap" placeholder="e.g. 10,000" oninput="updatePreview()">
+  </div>
+  <div class="field">
+    <div class="field-label">Contribution Deadline (business days) <span class="tip"><i class="tip-icon">i</i><span class="tip-box">The number of business days after the Date of Execution (signing) that members must make their initial capital contribution. Commonly 10 business days.</span></span></div>
+    <input type="text" id="f-days" placeholder="Default: 10" oninput="updatePreview()">
+  </div>
 
   <div class="status" id="status-msg"></div>
   <button class="gen-btn" id="gen-btn" onclick="generateDocx()">⬇ Download .docx</button>
@@ -246,477 +318,333 @@ input[type=file]::file-selector-button{background:#DAA142;color:#0C3652;border:n
 </div>
 
 <script>
-// ── STATE ──────────────────────────────────────────────────────────────────
 var llcType = 'single';
 var logoDataUrl = null;
 var multiMembers = [
   {name:'',addr:'',pct:'',cash:'',prop:'N/A',propval:'0'},
   {name:'',addr:'',pct:'',cash:'',prop:'N/A',propval:'0'}
 ];
-
 var NOTARY_NAME = 'Cleiton Cardoso';
 var NOTARY_COMM = 'HH493993';
 var NOTARY_EXP  = 'February 18, 2028';
 
-// ── HELPERS ────────────────────────────────────────────────────────────────
-function gv(id) {
-  var el = document.getElementById(id);
-  return el ? el.value.trim() : '';
+function gv(id){ var e=document.getElementById(id); return e?e.value.trim():''; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showEl(id){ document.getElementById(id).classList.remove('hidden'); }
+function hideEl(id){ document.getElementById(id).classList.add('hidden'); }
+
+function handleLogo(inp){
+  var file=inp.files[0]; if(!file) return;
+  var r=new FileReader();
+  r.onload=function(e){ logoDataUrl=e.target.result; document.getElementById('logo-img').src=logoDataUrl; document.getElementById('logo-thumb').style.display='block'; updatePreview(); };
+  r.readAsDataURL(file);
+}
+function removeLogo(){ logoDataUrl=null; document.getElementById('f-logo').value=''; document.getElementById('logo-thumb').style.display='none'; updatePreview(); }
+
+function setType(t){
+  llcType=t;
+  document.getElementById('btn-single').classList.toggle('active',t==='single');
+  document.getElementById('btn-multi').classList.toggle('active',t==='multi');
+  if(t==='single'){ showEl('sec-single'); hideEl('sec-multi'); }
+  else { hideEl('sec-single'); showEl('sec-multi'); renderMultiCards(); }
+  updatePreview();
 }
 
-function esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function onMgmtChange(){
+  gv('f-mgmt')==='manager' ? showEl('sec-manager') : hideEl('sec-manager');
+  updatePreview();
 }
 
-function showEl(id) { document.getElementById(id).classList.remove('hidden'); }
-function hideEl(id) { document.getElementById(id).classList.add('hidden'); }
+function addMember(){ multiMembers.push({name:'',addr:'',pct:'',cash:'',prop:'N/A',propval:'0'}); renderMultiCards(); }
+function removeMember(i){ if(multiMembers.length<=2) return; multiMembers.splice(i,1); renderMultiCards(); updatePreview(); }
 
-// ── LOGO ───────────────────────────────────────────────────────────────────
-function handleLogo(inp) {
-  var file = inp.files[0];
-  if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    logoDataUrl = e.target.result;
-    document.getElementById('logo-img').src = logoDataUrl;
-    document.getElementById('logo-thumb').style.display = 'block';
-    updatePreview();
+function renderMultiCards(){
+  var html='';
+  for(var i=0;i<multiMembers.length;i++){
+    var m=multiMembers[i];
+    html+='<div class="member-card"><div class="member-card-title">Member '+(i+1)+'</div>';
+    if(multiMembers.length>2) html+='<button class="remove-btn" onclick="removeMember('+i+')">&#215;</button>';
+    html+='<div class="field"><div class="field-label">Full Legal Name <span class="tip"><i class="tip-icon">i</i><span class="tip-box">Full legal name as it appears on government-issued identification.</span></span></div>';
+    html+='<input type="text" value="'+esc(m.name)+'" oninput="multiMembers['+i+'].name=this.value;updatePreview()" placeholder="Full legal name"></div>';
+    html+='<div class="field"><div class="field-label">Address</div>';
+    html+='<input type="text" value="'+esc(m.addr)+'" oninput="multiMembers['+i+'].addr=this.value;updatePreview()" placeholder="Full address"></div>';
+    html+='<div class="grid2">';
+    html+='<div class="field"><div class="field-label">% Interest <span class="tip"><i class="tip-icon">i</i><span class="tip-box">Ownership percentage. All members must total 100%.</span></span></div>';
+    html+='<input type="text" value="'+esc(m.pct)+'" oninput="multiMembers['+i+'].pct=this.value;updatePreview()" placeholder="e.g. 50"></div>';
+    html+='<div class="field"><div class="field-label">Cash (USD)</div>';
+    html+='<input type="text" value="'+esc(m.cash)+'" oninput="multiMembers['+i+'].cash=this.value;updatePreview()" placeholder="e.g. 5,000"></div></div>';
+    html+='<div class="field"><div class="field-label">Property / Services</div>';
+    html+='<input type="text" value="'+esc(m.prop)+'" oninput="multiMembers['+i+'].prop=this.value;updatePreview()" placeholder="N/A"></div>';
+    html+='<div class="field"><div class="field-label">Agreed Value (USD)</div>';
+    html+='<input type="text" value="'+esc(m.propval)+'" oninput="multiMembers['+i+'].propval=this.value;updatePreview()" placeholder="0"></div></div>';
+  }
+  document.getElementById('mm-cards').innerHTML=html;
+}
+
+function getVars(){
+  var s=llcType==='single';
+  var purposeInput = gv('f-purpose');
+  var purpose = purposeInput
+    ? 'The purpose of the Company is to '+purposeInput+(purposeInput.slice(-1)==='.'?'':' ')
+    : 'The purpose of the Company is to engage in any lawful act or activity for which a limited liability company may be organized under the laws of the State of Delaware.';
+  return {
+    isSingle:s,
+    co:gv('f-coname')||'[COMPANY NAME]',
+    dtForm:gv('f-dateform')||'[DATE OF FORMATION]',
+    dtExec:gv('f-dateexec')||'[DATE OF EXECUTION]',
+    addr:gv('f-addr')||'[PRINCIPAL OFFICE]',
+    mail:gv('f-mail'),
+    ra:gv('f-raname')||'[REGISTERED AGENT]',
+    raAddr:gv('f-raaddr')||'[ADDRESS]',
+    purpose:purpose,
+    cap:gv('f-cap')||'[AMOUNT]',
+    days:gv('f-days')||'10',
+    smName:gv('f-sm-name'),
+    smAddr:gv('f-sm-addr'),
+    smCash:gv('f-sm-cash')||'0',
+    smProp:gv('f-sm-prop')||'N/A',
+    smPropVal:gv('f-sm-propval')||'0',
+    mgmt:gv('f-mgmt')||'member',
+    mgrName:gv('f-mgrname'),
+    ceo:s?gv('f-ceo-s'):gv('f-ceo-m'),
+    debt:(s?gv('f-debt-s'):gv('f-debt-m'))||'25,000',
+    taxc:gv('f-taxc'),
+    partrep:gv('f-partrep'),
+    vp:gv('f-vote')||'more than fifty percent (50%)',
+    mgr2:gv('f-mgr2'),
+    tp:s?100:multiMembers.reduce(function(sum,m){ return sum+(parseFloat(m.pct)||0); },0)
   };
-  reader.readAsDataURL(file);
 }
 
-function removeLogo() {
-  logoDataUrl = null;
-  document.getElementById('f-logo').value = '';
-  document.getElementById('logo-thumb').style.display = 'none';
-  updatePreview();
-}
-
-// ── TYPE TOGGLE ────────────────────────────────────────────────────────────
-function setType(t) {
-  llcType = t;
-  document.getElementById('btn-single').classList.toggle('active', t === 'single');
-  document.getElementById('btn-multi').classList.toggle('active', t === 'multi');
-  if (t === 'single') {
-    showEl('sec-single');
-    hideEl('sec-multi');
-  } else {
-    hideEl('sec-single');
-    showEl('sec-multi');
-    renderMultiCards();
-  }
-  updatePreview();
-}
-
-function onMgmtChange() {
-  var mgmt = gv('f-mgmt');
-  if (mgmt === 'manager') {
-    showEl('sec-manager');
-  } else {
-    hideEl('sec-manager');
-  }
-  updatePreview();
-}
-
-// ── MULTI MEMBERS ──────────────────────────────────────────────────────────
-function addMember() {
-  multiMembers.push({name:'',addr:'',pct:'',cash:'',prop:'N/A',propval:'0'});
-  renderMultiCards();
-}
-
-function removeMember(i) {
-  if (multiMembers.length <= 2) return;
-  multiMembers.splice(i, 1);
-  renderMultiCards();
-  updatePreview();
-}
-
-function renderMultiCards() {
-  var html = '';
-  for (var i = 0; i < multiMembers.length; i++) {
-    var m = multiMembers[i];
-    html += '<div class="member-card">';
-    html += '<div class="member-card-title">Member ' + (i+1) + '</div>';
-    if (multiMembers.length > 2) {
-      html += '<button class="remove-btn" onclick="removeMember(' + i + ')">&#215;</button>';
-    }
-    html += '<div class="field"><label>Full Legal Name</label>';
-    html += '<input type="text" value="' + esc(m.name) + '" oninput="multiMembers[' + i + '].name=this.value;updatePreview()" placeholder="Full legal name"></div>';
-    html += '<div class="field"><label>Address</label>';
-    html += '<input type="text" value="' + esc(m.addr) + '" oninput="multiMembers[' + i + '].addr=this.value;updatePreview()" placeholder="Full address"></div>';
-    html += '<div class="grid2">';
-    html += '<div class="field"><label>% Interest</label>';
-    html += '<input type="text" value="' + esc(m.pct) + '" oninput="multiMembers[' + i + '].pct=this.value;updatePreview()" placeholder="e.g. 50"></div>';
-    html += '<div class="field"><label>Cash (USD)</label>';
-    html += '<input type="text" value="' + esc(m.cash) + '" oninput="multiMembers[' + i + '].cash=this.value;updatePreview()" placeholder="e.g. 5,000"></div>';
-    html += '</div>';
-    html += '<div class="field"><label>Property / Services</label>';
-    html += '<input type="text" value="' + esc(m.prop) + '" oninput="multiMembers[' + i + '].prop=this.value;updatePreview()" placeholder="N/A"></div>';
-    html += '<div class="field"><label>Agreed Value (USD)</label>';
-    html += '<input type="text" value="' + esc(m.propval) + '" oninput="multiMembers[' + i + '].propval=this.value;updatePreview()" placeholder="0"></div>';
-    html += '</div>';
-  }
-  document.getElementById('mm-cards').innerHTML = html;
-}
-
-// ── BUILD TEXT ─────────────────────────────────────────────────────────────
-function buildText(V) {
-  var s = V.isSingle;
-  var T = {};
-
-  T.intro = s
-    ? 'This Limited Liability Company Operating Agreement (this "Agreement") is entered into as of ' + V.dtExec + ', and shall be effective as of ' + V.dtForm + ', by ' + (V.smName||'[SOLE MEMBER NAME]') + ' (the "Sole Member"), being the sole member of ' + V.co + ' LLC, a Delaware limited liability company (the "Company").'
-    : 'This Limited Liability Company Operating Agreement (this "Agreement") is entered into as of ' + V.dtExec + ', and shall be effective as of ' + V.dtForm + ', by and among ' + V.co + ' LLC, a Delaware limited liability company (the "Company"), and the persons identified as Members on Exhibit 2 attached hereto.';
-
-  T.recital = s
-    ? 'The Sole Member desires to adopt this Agreement as the operating agreement of the Company pursuant to the Delaware Limited Liability Company Act.'
-    : 'The Members desire to adopt this Agreement as the operating agreement of the Company pursuant to the Delaware Limited Liability Company Act.';
-
-  T.formation = 'The Company has been formed as a Delaware limited liability company pursuant to the Delaware Limited Liability Company Act, 6 Del. C. \u00a7 18-101 et seq., by the filing of a Certificate of Formation with the Delaware Secretary of State. The Company\'s formation became effective as of ' + V.dtForm + '.';
-
-  T.s12 = 'This Agreement shall become effective as of ' + V.dtForm + ', the date of the Company\'s formation, and was executed by ' + (s ? 'the Sole Member' : 'the Members') + ' on ' + V.dtExec + '.';
-
-  T.s15 = s
-    ? 'The Company shall continue perpetually unless dissolved upon the earliest to occur of: (a) the written determination of the Sole Member to dissolve the Company; (b) the entry of a decree of judicial dissolution under the Delaware LLC Act; or (c) any event that makes it unlawful for the business of the Company to be carried on.'
-    : 'The Company shall continue perpetually unless dissolved upon the earliest to occur of: (a) the unanimous written consent of all Members; (b) the entry of a decree of judicial dissolution under the Delaware LLC Act; (c) any event making it unlawful for the business to be carried on; or (d) any other dissolution event under the Delaware LLC Act.';
-
-  T.s16 = s
-    ? 'The Sole Member shall have full authority to continue the business of the Company. The Company shall not dissolve upon the bankruptcy or incapacity of the Sole Member if a successor or legal representative continues the business in accordance with this Agreement and applicable law.'
-    : 'The death, resignation, withdrawal, bankruptcy, incapacity, or dissolution of any Member shall not cause the dissolution of the Company, provided that at least one Member remains and the business is continued in accordance with this Agreement and applicable law.';
-
-  T.purpose = 'The purpose of the Company is to engage in any lawful act or activity for which a limited liability company may be organized under the laws of the State of Delaware.';
-
-  T.s19 = s
-    ? 'The Sole Member owns one hundred percent (100%) of the Membership Interest in the Company.'
-    : 'The names, addresses, and Percentage Interests of the Members are set forth on Exhibit 2 attached hereto.';
-
-  T.s110 = 'No additional Member may be admitted without the prior written consent of all Members. Any additional Member shall execute a joinder to this Agreement.';
-
-  T.s21 = s
-    ? 'The Sole Member has contributed, or shall contribute within ' + V.days + ' business days after the date of execution of this Agreement, the amount set forth on Exhibit 2. The agreed value of the initial capital contribution is US$' + V.cap + '.'
-    : 'Each Member has contributed, or shall contribute within ' + V.days + ' business days after the date of execution of this Agreement, the amounts set forth on Exhibit 3. The aggregate agreed value is US$' + V.cap + '.';
-
-  T.s22 = s
-    ? 'The Sole Member shall not be required to make any additional capital contribution unless the Sole Member so determines in writing.'
-    : 'No Member shall be required to make any additional capital contribution unless approved in writing by all Members.';
-
-  T.s23 = s
-    ? 'The Sole Member shall not be entitled to receive interest on capital contributions and shall not have the right to withdraw capital except as expressly provided herein or as required by applicable law.'
-    : 'No Member shall be entitled to receive interest on capital contributions. No Member shall have the right to withdraw or demand return of any capital contribution except as expressly provided herein.';
-
-  T.s31 = s ? 'All profits and losses of the Company shall be allocated entirely to the Sole Member.' : 'Profits and losses shall be determined annually and allocated among the Members in proportion to their respective Percentage Interests.';
-
-  T.s32 = s
-    ? 'Distributions shall be made to the Sole Member at such times and amounts as the Sole Member determines in the Sole Member\'s sole discretion, subject to applicable law and the Company\'s obligations and reserves.'
-    : 'Distributions shall be made at such times and amounts as approved by Members holding ' + V.vp + ' of the Percentage Interests, pro rata in accordance with Percentage Interests.';
-
-  T.s33 = s
-    ? 'The Company may make tax distributions to the Sole Member to assist in satisfying tax liabilities arising from allocations of Company income.'
-    : 'The Company may make tax distributions to assist Members in satisfying tax liabilities. Such amounts shall be treated as advances against future distributions.';
-
-  T.s34 = 'No distribution shall be made if, after giving effect thereto, the Company would be unable to pay its debts as they become due in the ordinary course of business, or if such distribution would violate the Delaware LLC Act or applicable law.';
-
-  if (s) {
-    if (V.mgmt === 'member') {
-      T.s41 = 'The Company shall be member-managed. The Sole Member shall have full, exclusive, and complete authority to manage and control the business and affairs of the Company. No separate Manager is appointed.';
-      T.s42 = 'The Sole Member shall have sole authority to manage the Company, including the power to: (a) acquire, manage, and dispose of Company assets; (b) borrow money and grant security interests; (c) enter into contracts and execute instruments; (d) employ and engage service providers; (e) open and maintain bank accounts; and (f) take all other actions necessary to carry out the Company\'s business.';
-      T.s43 = 'All decisions with respect to the management and business of the Company shall be made solely by the Sole Member. No vote, consent, or approval of any other person is required.';
-      T.s44 = '';
+function buildText(V){
+  var s=V.isSingle;
+  var T={};
+  T.intro=s
+    ?'This Limited Liability Company Operating Agreement (this "Agreement") is entered into as of '+V.dtExec+', and shall be effective as of '+V.dtForm+', by '+(V.smName||'[SOLE MEMBER NAME]')+' (the "Sole Member"), being the sole member of '+V.co+' LLC, a Delaware limited liability company (the "Company").'
+    :'This Limited Liability Company Operating Agreement (this "Agreement") is entered into as of '+V.dtExec+', and shall be effective as of '+V.dtForm+', by and among '+V.co+' LLC, a Delaware limited liability company (the "Company"), and the persons identified as Members on Exhibit 2 attached hereto.';
+  T.recital=s
+    ?'The Sole Member desires to adopt this Agreement as the operating agreement of the Company pursuant to the Delaware Limited Liability Company Act.'
+    :'The Members desire to adopt this Agreement as the operating agreement of the Company pursuant to the Delaware Limited Liability Company Act.';
+  T.formation='The Company has been formed as a Delaware limited liability company pursuant to the Delaware Limited Liability Company Act, 6 Del. C. \u00a7 18-101 et seq., by the filing of a Certificate of Formation with the Delaware Secretary of State. The Company\'s formation became effective as of '+V.dtForm+'.';
+  T.s12='This Agreement shall become effective as of '+V.dtForm+', the date of the Company\'s formation, and was executed by '+(s?'the Sole Member':'the Members')+' on '+V.dtExec+'.';
+  T.s15=s
+    ?'The Company shall continue perpetually unless dissolved upon the earliest to occur of: (a) the written determination of the Sole Member to dissolve the Company; (b) the entry of a decree of judicial dissolution under the Delaware LLC Act; or (c) any event that makes it unlawful for the business of the Company to be carried on.'
+    :'The Company shall continue perpetually unless dissolved upon the earliest to occur of: (a) the unanimous written consent of all Members; (b) the entry of a decree of judicial dissolution under the Delaware LLC Act; (c) any event making it unlawful for the business to be carried on; or (d) any other dissolution event under the Delaware LLC Act.';
+  T.s16=s
+    ?'The Sole Member shall have full authority to continue the business of the Company. The Company shall not dissolve upon the bankruptcy or incapacity of the Sole Member if a successor or legal representative continues the business in accordance with this Agreement and applicable law.'
+    :'The death, resignation, withdrawal, bankruptcy, incapacity, or dissolution of any Member shall not cause the dissolution of the Company, provided that at least one Member remains and the business is continued in accordance with this Agreement and applicable law.';
+  T.s19=s?'The Sole Member owns one hundred percent (100%) of the Membership Interest in the Company.':'The names, addresses, and Percentage Interests of the Members are set forth on Exhibit 2 attached hereto.';
+  T.s110='No additional Member may be admitted without the prior written consent of all Members. Any additional Member shall execute a joinder to this Agreement.';
+  T.s21=s
+    ?'The Sole Member has contributed, or shall contribute within '+V.days+' business days after the date of execution of this Agreement, the amount set forth on Exhibit 2. The agreed value of the initial capital contribution is US$'+V.cap+'.'
+    :'Each Member has contributed, or shall contribute within '+V.days+' business days after the date of execution of this Agreement, the amounts set forth on Exhibit 3. The aggregate agreed value is US$'+V.cap+'.';
+  T.s22=s?'The Sole Member shall not be required to make any additional capital contribution unless the Sole Member so determines in writing.':'No Member shall be required to make any additional capital contribution unless approved in writing by all Members.';
+  T.s23=s?'The Sole Member shall not be entitled to receive interest on capital contributions and shall not have the right to withdraw capital except as expressly provided herein or as required by applicable law.':'No Member shall be entitled to receive interest on capital contributions. No Member shall have the right to withdraw or demand return of any capital contribution except as expressly provided herein.';
+  T.s31=s?'All profits and losses of the Company shall be allocated entirely to the Sole Member.':'Profits and losses shall be determined annually and allocated among the Members in proportion to their respective Percentage Interests.';
+  T.s32=s?'Distributions shall be made to the Sole Member at such times and amounts as the Sole Member determines in the Sole Member\'s sole discretion, subject to applicable law and the Company\'s obligations and reserves.':'Distributions shall be made at such times and amounts as approved by Members holding '+V.vp+' of the Percentage Interests, pro rata in accordance with Percentage Interests.';
+  T.s33=s?'The Company may make tax distributions to the Sole Member to assist in satisfying tax liabilities arising from allocations of Company income.':'The Company may make tax distributions to assist Members in satisfying tax liabilities. Such amounts shall be treated as advances against future distributions.';
+  T.s34='No distribution shall be made if, after giving effect thereto, the Company would be unable to pay its debts as they become due in the ordinary course of business, or if such distribution would violate the Delaware LLC Act or applicable law.';
+  if(s){
+    if(V.mgmt==='member'){
+      T.s41='The Company shall be member-managed. The Sole Member shall have full, exclusive, and complete authority to manage and control the business and affairs of the Company. No separate Manager is appointed.';
+      T.s42='The Sole Member shall have sole authority to manage the Company, including the power to: (a) acquire, manage, and dispose of Company assets; (b) borrow money and grant security interests; (c) enter into contracts and execute instruments; (d) employ and engage service providers; (e) open and maintain bank accounts; and (f) take all other actions necessary to carry out the Company\'s business.';
+      T.s43='All decisions with respect to the management and business of the Company shall be made solely by the Sole Member. No vote, consent, or approval of any other person is required.';
+      T.s44='';
     } else {
-      var mn = V.mgrName || '[MANAGER NAME]';
-      T.s41 = 'The Company shall be manager-managed. The Sole Member hereby appoints ' + mn + ' as the initial Manager. The Sole Member may remove, replace, or appoint any Manager at any time in the Sole Member\'s sole discretion.';
-      T.s42 = 'The Manager shall have authority to manage the day-to-day business of the Company, subject to the Sole Member\'s reserved rights, including the power to: (a) acquire, manage, and dispose of Company assets; (b) borrow money up to US$' + V.debt + '; (c) execute contracts and instruments; (d) employ service providers; (e) open and maintain bank accounts; and (f) take all actions necessary to carry out the Company\'s business.';
-      T.s43 = 'The following actions require prior written approval of the Sole Member: (a) removal or replacement of the Manager; (b) amendment of this Agreement; (c) dissolution of the Company; (d) sale of all or substantially all assets; (e) indebtedness exceeding US$' + V.debt + '; (f) admission of any additional member; and (g) any transaction between the Company and the Manager or any affiliate.';
-      T.s44 = 'Chief Executive Manager: ' + (V.ceo || mn);
+      var mn=V.mgrName||'[MANAGER NAME]';
+      T.s41='The Company shall be manager-managed. The Sole Member hereby appoints '+mn+' as the initial Manager. The Sole Member may remove, replace, or appoint any Manager at any time in the Sole Member\'s sole discretion.';
+      T.s42='The Manager shall have authority to manage the day-to-day business of the Company, subject to the Sole Member\'s reserved rights, including the power to: (a) acquire, manage, and dispose of Company assets; (b) borrow money up to US$'+V.debt+'; (c) execute contracts and instruments; (d) employ service providers; (e) open and maintain bank accounts; and (f) take all actions necessary to carry out the Company\'s business.';
+      T.s43='The following actions require prior written approval of the Sole Member: (a) removal or replacement of the Manager; (b) amendment of this Agreement; (c) dissolution of the Company; (d) sale of all or substantially all assets; (e) indebtedness exceeding US$'+V.debt+'; (f) admission of any additional member; and (g) any transaction between the Company and the Manager or any affiliate.';
+      T.s44='Chief Executive Manager: '+(V.ceo||mn);
     }
-    T.s45 = 'To the fullest extent permitted by the Delaware LLC Act, the ' + (V.mgmt === 'manager' ? 'Manager' : 'Sole Member') + ' shall not be liable for any act or omission taken in good faith in a manner reasonably believed to be in the best interests of the Company. Nothing herein eliminates liability for fraud, willful misconduct, or knowing violation of law.';
-    T.s46 = 'To the fullest extent permitted by the Delaware LLC Act, the Company shall indemnify and hold harmless the ' + (V.mgmt === 'manager' ? 'Manager' : 'Sole Member') + ' from any loss, liability, or expense arising from good-faith acts on behalf of the Company. No indemnification applies to fraud, willful misconduct, or knowing violation of law.';
+    T.s45='To the fullest extent permitted by the Delaware LLC Act, the '+(V.mgmt==='manager'?'Manager':'Sole Member')+' shall not be liable for any act or omission taken in good faith in a manner reasonably believed to be in the best interests of the Company. Nothing herein eliminates liability for fraud, willful misconduct, or knowing violation of law.';
+    T.s46='To the fullest extent permitted by the Delaware LLC Act, the Company shall indemnify and hold harmless the '+(V.mgmt==='manager'?'Manager':'Sole Member')+' from any loss, liability, or expense arising from good-faith acts on behalf of the Company. No indemnification applies to fraud, willful misconduct, or knowing violation of law.';
   } else {
-    T.s41 = 'The Company shall be manager-managed. The Managers listed on Exhibit 1 are hereby appointed as initial Managers. Managers may be removed or replaced by Members holding ' + V.vp + ' of the Percentage Interests.';
-    T.s42 = 'Approval of Members holding ' + V.vp + ' of Percentage Interests is required for: (a) removal of a Manager; (b) approval of distributions; (c) annual budget; (d) indebtedness exceeding US$' + V.debt + '; (e) opening or closing bank accounts; and (f) any matter submitted by the Managers for Member approval.';
-    T.s43 = 'Unanimous written consent of all Members is required for: (a) amendment of this Agreement; (b) admission of a new Member; (c) merger or consolidation; (d) sale of all or substantially all assets; (e) voluntary dissolution; (f) issuance of additional interests; (g) any change to Percentage Interests; and (h) any related-party transaction not expressly permitted herein.';
-    T.s44 = 'Initial Chief Executive Manager: ' + (V.ceo || '[NAME]');
-    T.s45 = 'To the fullest extent permitted by the Delaware LLC Act, no Member, Manager, or officer shall be liable for acts taken in good faith. Nothing herein eliminates liability for fraud, willful misconduct, or knowing violation of law.';
-    T.s46 = 'To the fullest extent permitted by the Delaware LLC Act, the Company shall indemnify and hold harmless each Member, Manager, and officer from losses arising from good-faith acts. No indemnification applies to fraud, willful misconduct, or knowing violation of law.';
+    T.s41='The Company shall be manager-managed. The Managers listed on Exhibit 1 are hereby appointed as initial Managers. Managers may be removed or replaced by Members holding '+V.vp+' of the Percentage Interests.';
+    T.s42='Approval of Members holding '+V.vp+' of Percentage Interests is required for: (a) removal of a Manager; (b) approval of distributions; (c) annual budget; (d) indebtedness exceeding US$'+V.debt+'; (e) opening or closing bank accounts; and (f) any matter submitted by the Managers for Member approval.';
+    T.s43='Unanimous written consent of all Members is required for: (a) amendment of this Agreement; (b) admission of a new Member; (c) merger or consolidation; (d) sale of all or substantially all assets; (e) voluntary dissolution; (f) issuance of additional interests; (g) any change to Percentage Interests; and (h) any related-party transaction not expressly permitted herein.';
+    T.s44='Initial Chief Executive Manager: '+(V.ceo||'[NAME]');
+    T.s45='To the fullest extent permitted by the Delaware LLC Act, no Member, Manager, or officer shall be liable for acts taken in good faith. Nothing herein eliminates liability for fraud, willful misconduct, or knowing violation of law.';
+    T.s46='To the fullest extent permitted by the Delaware LLC Act, the Company shall indemnify and hold harmless each Member, Manager, and officer from losses arising from good-faith acts. No indemnification applies to fraud, willful misconduct, or knowing violation of law.';
   }
-
-  T.a6t = s
-    ? 'The Company shall be treated as a disregarded entity for U.S. federal income tax purposes. The Sole Member shall report all income, deductions, and credits on the Sole Member\'s tax return. No election to change the Company\'s tax classification shall be made without the prior written consent of the Sole Member.'
-    : 'The Company shall be treated as a partnership for U.S. federal income tax purposes unless otherwise elected by unanimous written consent of all Members.';
-
-  T.a6r = s
-    ? 'The Sole Member shall be responsible for all tax filings and IRS correspondence on behalf of the Company. The Sole Member hereby designates ' + (V.taxc || V.smName || '[TAX CONTACT]') + ' as the primary tax contact and responsible party for the Company.'
-    : 'The Company shall designate a Partnership Representative pursuant to Internal Revenue Code Section 6223. Initial Partnership Representative: ' + (V.partrep || '[NAME]') + '. The Partnership Representative shall keep Members informed of material tax proceedings and shall not settle material tax matters without approval of Members holding ' + V.vp + ' of the Percentage Interests.';
-
-  T.t71 = s ? 'The Sole Member may transfer, assign, or otherwise dispose of the Sole Member\'s Membership Interest in accordance with this Article VII and applicable law.' : 'No Member may sell, assign, pledge, encumber, or transfer any Membership Interest except in accordance with this Article VII. Any attempted transfer in violation hereof shall be null and void.';
-  T.t72 = s ? 'The Sole Member may transfer the Membership Interest to: (a) a revocable trust or estate planning vehicle; (b) a spouse, parent, descendant, or sibling; or (c) an entity wholly owned by the Sole Member. Any transferee must agree in writing to be bound by this Agreement.' : 'A Member desiring to transfer must first deliver written notice to the Company and all other Members stating the offered interest, proposed transferee, price, and all material terms. The non-transferring Members shall have thirty (30) days to elect to purchase all of the offered Membership Interest on the same terms.';
-  T.t73 = s ? 'Upon the death or legal incapacity of the Sole Member, the Membership Interest shall pass to the Sole Member\'s legal representative, estate, or successor in accordance with applicable law. The Company shall not dissolve solely as a result of the death or incapacity of the Sole Member.' : 'A Member may transfer to: (a) a revocable trust; (b) a family member; (c) a wholly-owned entity; or (d) another Member — provided prior written notice is given and the transferee executes a joinder to this Agreement.';
-  T.t74 = s ? '' : 'No transferee shall be admitted as a Member without written approval of all Members, execution of a joinder, and provision of all required tax and compliance information. Until admitted, a transferee holds economic rights only.';
-
-  T.a82 = s
-    ? 'Upon dissolution, the Sole Member, or a liquidating trustee designated by the Sole Member, shall wind up the Company\'s affairs: (a) collecting assets; (b) disposing of assets; (c) paying or providing for Company debts; and (d) distributing remaining assets to the Sole Member.'
-    : 'Upon dissolution, the Managers, or a liquidating trustee appointed by Members holding ' + V.vp + ' of the Percentage Interests, shall wind up the Company\'s affairs: (a) collecting assets; (b) disposing of assets; (c) paying or providing for debts; (d) establishing reserves for contingent liabilities; and (e) distributing remaining assets to the Members.';
-
-  T.a83 = s
-    ? 'Upon liquidation, assets shall be distributed: (a) first, to creditors; (b) second, to reserves for contingent liabilities; and (c) thereafter, entirely to the Sole Member.'
-    : 'Upon liquidation, assets shall be distributed: (a) first, to creditors; (b) second, to reserves; (c) third, to Members per positive capital account balances; and (d) thereafter, to Members per Percentage Interests.';
-
-  T.a84 = 'Upon completion of winding up, ' + (s ? 'the Sole Member or liquidating trustee' : 'the Managers or liquidating trustee') + ' shall cause a Certificate of Cancellation to be filed with the Delaware Secretary of State.';
-
+  T.a6t=s
+    ?'The Company shall be treated as a disregarded entity for U.S. federal income tax purposes. The Sole Member shall report all income, deductions, and credits on the Sole Member\'s tax return. No election to change the Company\'s tax classification shall be made without the prior written consent of the Sole Member.'
+    :'The Company shall be treated as a partnership for U.S. federal income tax purposes unless otherwise elected by unanimous written consent of all Members.';
+  T.a6r=s
+    ?'The Sole Member shall be responsible for all tax filings and IRS correspondence on behalf of the Company. The Sole Member hereby designates '+(V.taxc||V.smName||'[TAX CONTACT]')+' as the primary tax contact and responsible party for the Company.'
+    :'The Company shall designate a Partnership Representative pursuant to Internal Revenue Code Section 6223. Initial Partnership Representative: '+(V.partrep||'[NAME]')+'. The Partnership Representative shall keep Members informed of material tax proceedings and shall not settle material tax matters without approval of Members holding '+V.vp+' of the Percentage Interests.';
+  T.t71=s?'The Sole Member may transfer, assign, or otherwise dispose of the Sole Member\'s Membership Interest in accordance with this Article VII and applicable law.':'No Member may sell, assign, pledge, encumber, or transfer any Membership Interest except in accordance with this Article VII. Any attempted transfer in violation hereof shall be null and void.';
+  T.t72=s?'The Sole Member may transfer the Membership Interest to: (a) a revocable trust or estate planning vehicle; (b) a spouse, parent, descendant, or sibling; or (c) an entity wholly owned by the Sole Member. Any transferee must agree in writing to be bound by this Agreement.':'A Member desiring to transfer must first deliver written notice to the Company and all other Members stating the offered interest, proposed transferee, price, and all material terms. The non-transferring Members shall have thirty (30) days to elect to purchase all of the offered Membership Interest on the same terms.';
+  T.t73=s?'Upon the death or legal incapacity of the Sole Member, the Membership Interest shall pass to the Sole Member\'s legal representative, estate, or successor in accordance with applicable law. The Company shall not dissolve solely as a result of the death or incapacity of the Sole Member.':'A Member may transfer to: (a) a revocable trust; (b) a family member; (c) a wholly-owned entity; or (d) another Member — provided prior written notice is given and the transferee executes a joinder to this Agreement.';
+  T.t74=s?'':'No transferee shall be admitted as a Member without written approval of all Members, execution of a joinder, and provision of all required tax and compliance information. Until admitted, a transferee holds economic rights only.';
+  T.a82=s?'Upon dissolution, the Sole Member, or a liquidating trustee designated by the Sole Member, shall wind up the Company\'s affairs: (a) collecting assets; (b) disposing of assets; (c) paying or providing for Company debts; and (d) distributing remaining assets to the Sole Member.':'Upon dissolution, the Managers, or a liquidating trustee appointed by Members holding '+V.vp+' of the Percentage Interests, shall wind up the Company\'s affairs: (a) collecting assets; (b) disposing of assets; (c) paying or providing for debts; (d) establishing reserves for contingent liabilities; and (e) distributing remaining assets to the Members.';
+  T.a83=s?'Upon liquidation, assets shall be distributed: (a) first, to creditors; (b) second, to reserves for contingent liabilities; and (c) thereafter, entirely to the Sole Member.':'Upon liquidation, assets shall be distributed: (a) first, to creditors; (b) second, to reserves; (c) third, to Members per positive capital account balances; and (d) thereafter, to Members per Percentage Interests.';
+  T.a84='Upon completion of winding up, '+(s?'the Sole Member or liquidating trustee':'the Managers or liquidating trustee')+' shall cause a Certificate of Cancellation to be filed with the Delaware Secretary of State.';
   return T;
 }
 
-// ── GET VARS ───────────────────────────────────────────────────────────────
-function getVars() {
-  var s = llcType === 'single';
-  return {
-    isSingle: s,
-    co: gv('f-coname') || '[COMPANY NAME]',
-    dtForm: gv('f-dateform') || '[DATE OF FORMATION]',
-    dtExec: gv('f-dateexec') || '[DATE OF EXECUTION]',
-    addr: gv('f-addr') || '[PRINCIPAL OFFICE]',
-    mail: gv('f-mail'),
-    ra: gv('f-raname') || '[REGISTERED AGENT]',
-    raAddr: gv('f-raaddr') || '[ADDRESS]',
-    cap: gv('f-cap') || '[AMOUNT]',
-    days: gv('f-days') || '10',
-    smName: gv('f-sm-name'),
-    smAddr: gv('f-sm-addr'),
-    smCash: gv('f-sm-cash') || '0',
-    smProp: gv('f-sm-prop') || 'N/A',
-    smPropVal: gv('f-sm-propval') || '0',
-    mgmt: gv('f-mgmt') || 'member',
-    mgrName: gv('f-mgrname'),
-    ceo: s ? gv('f-ceo-s') : gv('f-ceo-m'),
-    debt: (s ? gv('f-debt-s') : gv('f-debt-m')) || '25,000',
-    taxc: gv('f-taxc'),
-    partrep: gv('f-partrep'),
-    vp: gv('f-vote') || 'more than fifty percent (50%)',
-    mgr2: gv('f-mgr2'),
-    ml: s ? null : multiMembers,
-    tp: s ? 100 : multiMembers.reduce(function(sum,m){ return sum + (parseFloat(m.pct)||0); }, 0)
-  };
-}
-
-// ── SIGNATURE BLOCK HTML ───────────────────────────────────────────────────
-function sigBlockHTML(role, name, pct) {
-  var h = '<div class="sig-block">';
-  h += '<div class="sig-role">' + esc(role) + (pct ? ' &mdash; ' + esc(pct) : '') + '</div>';
-  h += '<div class="sig-name-label">Name:</div>';
-  h += '<div class="sig-name-value">' + esc(name) + '</div>';
-  h += '<div class="sig-lines">';
-  h += '<div class="sig-line-item"><div class="sig-line-label">Signature</div><div class="sig-line-blank"></div></div>';
-  h += '<div class="sig-line-item"><div class="sig-line-label">Date</div><div class="sig-line-blank"></div></div>';
-  h += '</div></div>';
+function sigBlockHTML(role,name,pct){
+  var h='<div class="sig-block">';
+  h+='<div class="sig-role">'+esc(role)+(pct?' &mdash; '+esc(pct):'')+'</div>';
+  h+='<div class="sig-name-label">Name:</div>';
+  h+='<div class="sig-name-value">'+esc(name)+'</div>';
+  h+='<div class="sig-lines"><div class="sig-line-item"><div class="sig-line-label">Signature</div><div class="sig-line-blank"></div></div>';
+  h+='<div class="sig-line-item"><div class="sig-line-label">Date</div><div class="sig-line-blank"></div></div></div></div>';
   return h;
 }
 
-// ── NOTARY BLOCK HTML ──────────────────────────────────────────────────────
-function notaryHTML(names) {
-  var h = '<div class="notary-block">';
-  h += '<div class="notary-title">OPTIONAL ACKNOWLEDGMENT &mdash; NOTARIZATION</div>';
-  h += '<div class="notary-row">';
-  h += '<div class="notary-field"><div class="notary-field-label">State of</div><div class="notary-blank"></div></div>';
-  h += '<div class="notary-field"><div class="notary-field-label">County of</div><div class="notary-blank"></div></div>';
-  h += '</div>';
-  h += '<p class="notary-p">The foregoing instrument was acknowledged before me by means of: &#9744; Physical presence &nbsp;&nbsp; &#9744; Online notarization</p>';
-  h += '<p class="notary-p">This <span style="border-bottom:1px solid #bbb;padding:0 18px">&nbsp;</span> day of <span style="border-bottom:1px solid #bbb;padding:0 28px">&nbsp;</span>, 20<span style="border-bottom:1px solid #bbb;padding:0 10px">&nbsp;</span>, by:</p>';
-  h += '<p class="notary-p"><strong>' + esc(names) + '</strong></p>';
-  h += '<p class="notary-p">who is/are &#9744; personally known to me or &#9744; produced the following identification: <span style="border-bottom:1px solid #bbb;padding:0 55px">&nbsp;</span></p>';
-  h += '<div class="notary-sig-row">';
-  h += '<div class="notary-sig-item"><div class="notary-sig-label">Signature of Notary Public</div><div class="notary-sig-blank"></div><div class="notary-prefill">' + esc(NOTARY_NAME) + '</div></div>';
-  h += '<div class="notary-sig-item"><div class="notary-sig-label">Print Name</div><div class="notary-sig-blank"></div><div class="notary-prefill">' + esc(NOTARY_NAME) + '</div></div>';
-  h += '</div>';
-  h += '<div class="notary-comm-row">';
-  h += '<div class="notary-comm-item"><span class="notary-comm-label">Commission #</span>' + esc(NOTARY_COMM) + '</div>';
-  h += '<div class="notary-comm-item"><span class="notary-comm-label">My Commission Expires:</span>' + esc(NOTARY_EXP) + '</div>';
-  h += '</div></div>';
+function notaryHTML(names){
+  var h='<div class="notary-block"><div class="notary-title">OPTIONAL ACKNOWLEDGMENT &mdash; NOTARIZATION</div>';
+  h+='<div class="notary-row"><div class="notary-field"><div class="notary-field-label">State of</div><div class="notary-blank"></div></div>';
+  h+='<div class="notary-field"><div class="notary-field-label">County of</div><div class="notary-blank"></div></div></div>';
+  h+='<p class="notary-p">The foregoing instrument was acknowledged before me by means of: &#9744; Physical presence &nbsp;&nbsp; &#9744; Online notarization</p>';
+  h+='<p class="notary-p">This <span style="border-bottom:1px solid #bbb;padding:0 18px">&nbsp;</span> day of <span style="border-bottom:1px solid #bbb;padding:0 28px">&nbsp;</span>, 20<span style="border-bottom:1px solid #bbb;padding:0 10px">&nbsp;</span>, by:</p>';
+  h+='<p class="notary-p"><strong>'+esc(names)+'</strong></p>';
+  h+='<p class="notary-p">who is/are &#9744; personally known to me or &#9744; produced the following identification: <span style="border-bottom:1px solid #bbb;padding:0 55px">&nbsp;</span></p>';
+  h+='<div class="notary-sig-row"><div class="notary-sig-item"><div class="notary-sig-label">Signature of Notary Public</div><div class="notary-sig-blank"></div><div class="notary-prefill">'+esc(NOTARY_NAME)+'</div></div>';
+  h+='<div class="notary-sig-item"><div class="notary-sig-label">Print Name</div><div class="notary-sig-blank"></div><div class="notary-prefill">'+esc(NOTARY_NAME)+'</div></div></div>';
+  h+='<div class="notary-comm-row"><div class="notary-comm-item"><span class="notary-comm-label">Commission #</span>'+esc(NOTARY_COMM)+'</div>';
+  h+='<div class="notary-comm-item"><span class="notary-comm-label">My Commission Expires:</span>'+esc(NOTARY_EXP)+'</div></div></div>';
   return h;
 }
 
-// ── UPDATE PREVIEW ─────────────────────────────────────────────────────────
-function updatePreview() {
-  var V = getVars();
-  var T = buildText(V);
-  var s = V.isSingle;
-
-  var logoH = logoDataUrl
-    ? '<img src="' + logoDataUrl + '" style="max-height:55px;max-width:190px;display:block;margin-bottom:5px">'
-    : '<div class="cover-logo-text">DOMINIUM</div><div class="cover-logo-sub">Global Advisory Corp</div>';
-
-  var struct = s ? (V.mgmt === 'member' ? 'Member-Managed' : 'Manager-Managed') : 'Manager-Managed';
-
-  // build member rows for tables
-  var mRows = '', cRows = '', sigs = '', mNames = '';
-  if (s) {
-    var nm = V.smName || '[Sole Member]';
-    mRows = '<tr><td>' + esc(nm) + '</td><td>' + esc(V.smAddr||'&mdash;') + '</td><td>100%</td></tr>';
-    cRows = '<tr><td>' + esc(nm) + '</td><td>US$' + esc(V.smCash) + '</td><td>' + esc(V.smProp) + '</td><td>US$' + esc(V.smPropVal) + '</td><td>100%</td></tr>';
-    sigs = sigBlockHTML('Sole Member', nm, '100% Interest');
-    mNames = nm;
-    if (V.mgmt === 'manager' && V.mgrName) sigs += sigBlockHTML('Manager', V.mgrName, '');
+function updatePreview(){
+  var V=getVars();
+  var T=buildText(V);
+  var s=V.isSingle;
+  var logoH=logoDataUrl?'<img src="'+logoDataUrl+'" style="max-height:55px;max-width:190px;display:block;margin-bottom:5px">':'<div class="cover-logo-text">DOMINIUM</div><div class="cover-logo-sub">Global Advisory Corp</div>';
+  var struct=s?(V.mgmt==='member'?'Member-Managed':'Manager-Managed'):'Manager-Managed';
+  var mRows='',cRows='',sigs='',mNames='';
+  if(s){
+    var nm=V.smName||'[Sole Member]';
+    mRows='<tr><td>'+esc(nm)+'</td><td>'+esc(V.smAddr||'&mdash;')+'</td><td>100%</td></tr>';
+    cRows='<tr><td>'+esc(nm)+'</td><td>US$'+esc(V.smCash)+'</td><td>'+esc(V.smProp)+'</td><td>US$'+esc(V.smPropVal)+'</td><td>100%</td></tr>';
+    sigs=sigBlockHTML('Sole Member',nm,'100% Interest');
+    mNames=nm;
+    if(V.mgmt==='manager'&&V.mgrName) sigs+=sigBlockHTML('Manager',V.mgrName,'');
   } else {
-    for (var i = 0; i < multiMembers.length; i++) {
-      var m = multiMembers[i];
-      var nm = m.name || ('[Member ' + (i+1) + ']');
-      var pct = m.pct ? m.pct + '%' : '&mdash;';
-      mRows += '<tr><td>' + esc(nm) + '</td><td>' + esc(m.addr||'&mdash;') + '</td><td>' + pct + '</td></tr>';
-      cRows += '<tr><td>' + esc(nm) + '</td><td>US$' + esc(m.cash||'0') + '</td><td>' + esc(m.prop||'N/A') + '</td><td>US$' + esc(m.propval||'0') + '</td><td>' + pct + '</td></tr>';
-      sigs += sigBlockHTML('Member ' + (i+1), nm, m.pct ? m.pct + '% Interest' : '');
-      mNames += (mNames ? ', ' : '') + nm;
+    for(var i=0;i<multiMembers.length;i++){
+      var m=multiMembers[i];
+      var nm=m.name||('[Member '+(i+1)+']');
+      var pct=m.pct?m.pct+'%':'&mdash;';
+      mRows+='<tr><td>'+esc(nm)+'</td><td>'+esc(m.addr||'&mdash;')+'</td><td>'+pct+'</td></tr>';
+      cRows+='<tr><td>'+esc(nm)+'</td><td>US$'+esc(m.cash||'0')+'</td><td>'+esc(m.prop||'N/A')+'</td><td>US$'+esc(m.propval||'0')+'</td><td>'+pct+'</td></tr>';
+      sigs+=sigBlockHTML('Member '+(i+1),nm,m.pct?m.pct+'% Interest':'');
+      mNames+=(mNames?', ':'')+nm;
     }
   }
-
-  function art(title) { return '<div class="art-title">' + title + '</div>'; }
-  function sec(num, title, text) {
-    return '<div class="sec-title"><span class="sec-num">' + num + '</span>' + title + '</div><p class="doc-p">' + text + '</p>';
+  function art(t){ return '<div class="art-title">'+t+'</div>'; }
+  function sec(n,t,txt){ return '<div class="sec-title"><span class="sec-num">'+n+'</span>'+t+'</div><p class="doc-p">'+txt+'</p>'; }
+  var html='<div class="doc-cover"><div>'+logoH+'</div><div><div class="cover-divider"></div>';
+  html+='<div class="cover-type">Limited Liability Company Operating Agreement</div>';
+  html+='<div class="cover-title">'+esc(V.co)+' LLC</div>';
+  html+='<div class="cover-subtitle">A Delaware Limited Liability Company &nbsp;&middot;&nbsp; '+(s?'Single-Member':'Multi-Member')+'</div>';
+  html+='<div class="cover-meta">';
+  html+='<div><div class="meta-label">Date of Formation</div><div class="meta-value">'+esc(V.dtForm)+'</div></div>';
+  html+='<div><div class="meta-label">Date of Agreement</div><div class="meta-value">'+esc(V.dtExec)+'</div></div>';
+  html+='<div><div class="meta-label">State of Formation</div><div class="meta-value">Delaware</div></div>';
+  html+='<div><div class="meta-label">Structure</div><div class="meta-value">'+struct+'</div></div>';
+  html+='<div><div class="meta-label">Registered Agent</div><div class="meta-value">'+esc(V.ra)+'</div></div>';
+  html+='</div></div></div>';
+  html+='<div class="doc-body">';
+  html+='<span class="badge '+(s?'badge-single':'badge-multi')+'">'+(s?'Single-Member':'Multi-Member')+' LLC &middot; Delaware</span>';
+  html+='<p class="doc-p">'+T.intro+'</p><p class="doc-p">'+T.recital+'</p>';
+  html+=art('ARTICLE I &mdash; COMPANY FORMATION');
+  html+=sec('1.1','Formation',T.formation);
+  html+=sec('1.2','Effective Date and Date of Execution',T.s12);
+  html+=sec('1.3','Name','The name of the Company shall be: <strong>'+esc(V.co)+' LLC</strong>.');
+  html+=sec('1.4','Registered Agent','<strong>'+esc(V.ra)+'</strong><br>'+esc(V.raAddr));
+  html+=sec('1.5','Term',T.s15);
+  html+=sec('1.6','Continuance',T.s16);
+  html+=sec('1.7','Business Purpose',V.purpose);
+  html+=sec('1.8','Principal Office','<strong>Principal Office:</strong> '+esc(V.addr)+(V.mail?'<br><strong>Mailing Address:</strong> '+esc(V.mail):''));
+  html+=sec('1.9',s?'Sole Membership Interest':'Percentage Interests',T.s19);
+  if(!s){
+    html+='<table class="doc-table"><tr><th>Member</th><th>Address</th><th>% Interest</th></tr>'+mRows+'<tr class="total"><td>Total</td><td></td><td>'+V.tp+'%</td></tr></table>';
+    html+=sec('1.10','Admission of Additional Members',T.s110);
   }
-
-  var html = '<div class="doc-cover">';
-  html += '<div>' + logoH + '</div>';
-  html += '<div><div class="cover-divider"></div>';
-  html += '<div class="cover-type">Limited Liability Company Operating Agreement</div>';
-  html += '<div class="cover-title">' + esc(V.co) + ' LLC</div>';
-  html += '<div class="cover-subtitle">A Delaware Limited Liability Company &nbsp;&middot;&nbsp; ' + (s ? 'Single-Member' : 'Multi-Member') + '</div>';
-  html += '<div class="cover-meta">';
-  html += '<div><div class="meta-label">Date of Formation</div><div class="meta-value">' + esc(V.dtForm) + '</div></div>';
-  html += '<div><div class="meta-label">Date of Agreement</div><div class="meta-value">' + esc(V.dtExec) + '</div></div>';
-  html += '<div><div class="meta-label">State of Formation</div><div class="meta-value">Delaware</div></div>';
-  html += '<div><div class="meta-label">Structure</div><div class="meta-value">' + struct + '</div></div>';
-  html += '<div><div class="meta-label">Registered Agent</div><div class="meta-value">' + esc(V.ra) + '</div></div>';
-  html += '</div></div></div>';
-
-  html += '<div class="doc-body">';
-  html += '<span class="badge ' + (s ? 'badge-single' : 'badge-multi') + '">' + (s ? 'Single-Member' : 'Multi-Member') + ' LLC &middot; Delaware</span>';
-  html += '<p class="doc-p">' + T.intro + '</p>';
-  html += '<p class="doc-p">' + T.recital + '</p>';
-
-  html += art('ARTICLE I &mdash; COMPANY FORMATION');
-  html += sec('1.1', 'Formation', T.formation);
-  html += sec('1.2', 'Effective Date and Date of Execution', T.s12);
-  html += sec('1.3', 'Name', 'The name of the Company shall be: <strong>' + esc(V.co) + ' LLC</strong>.');
-  html += sec('1.4', 'Registered Agent', '<strong>' + esc(V.ra) + '</strong><br>' + esc(V.raAddr));
-  html += sec('1.5', 'Term', T.s15);
-  html += sec('1.6', 'Continuance', T.s16);
-  html += sec('1.7', 'Business Purpose', T.purpose);
-  html += sec('1.8', 'Principal Office', '<strong>Principal Office:</strong> ' + esc(V.addr) + (V.mail ? '<br><strong>Mailing Address:</strong> ' + esc(V.mail) : ''));
-  html += sec('1.9', s ? 'Sole Membership Interest' : 'Percentage Interests', T.s19);
-  if (!s) {
-    html += '<table class="doc-table"><tr><th>Member</th><th>Address</th><th>% Interest</th></tr>' + mRows + '<tr class="total"><td>Total</td><td></td><td>' + V.tp + '%</td></tr></table>';
-    html += sec('1.10', 'Admission of Additional Members', T.s110);
-  }
-
-  html += art('ARTICLE II &mdash; CAPITAL CONTRIBUTIONS');
-  html += sec('2.1', 'Initial ' + (s ? 'Contribution' : 'Contributions'), T.s21);
-  html += sec('2.2', 'Additional ' + (s ? 'Contribution' : 'Contributions'), T.s22);
-  html += sec('2.3', 'Capital Account', T.s23 + ' A separate capital account shall be maintained for ' + (s ? 'the Sole Member' : 'each Member') + ' in accordance with Treasury Regulation &sect; 1.704-1(b)(2)(iv).');
-
-  html += art('ARTICLE III &mdash; PROFITS, LOSSES AND DISTRIBUTIONS');
-  html += sec('3.1','Allocations',T.s31) + sec('3.2','Distributions',T.s32) + sec('3.3','Tax Distributions',T.s33) + sec('3.4','Limitation on Distributions',T.s34);
-
-  html += art('ARTICLE IV &mdash; MANAGEMENT');
-  html += sec('4.1', s ? 'Management Structure' : 'Manager-Managed Structure', T.s41);
-  html += sec('4.2', s ? 'Authority' : 'Majority Vote Matters', T.s42);
-  html += sec('4.3', s ? (V.mgmt==='manager' ? 'Reserved Rights of the Sole Member' : 'Decision-Making') : 'Unanimous Consent Matters', T.s43);
-  var nextNum = 4;
-  if (T.s44) { html += sec('4.4', 'Chief Executive Manager', T.s44); nextNum = 5; }
-  html += sec('4.' + (nextNum-1), 'Exculpation', T.s45);
-  html += sec('4.' + nextNum, 'Indemnification', T.s46);
-
-  html += art('ARTICLE V &mdash; COMPENSATION AND REIMBURSEMENT');
-  html += '<p class="doc-p">' + (s ? 'The Sole Member may receive compensation, distributions, or reimbursements as determined by the Sole Member. The Company shall reimburse authorized out-of-pocket expenses.' : 'No Manager shall receive compensation unless approved in accordance with Section 4.3. The Company shall reimburse authorized out-of-pocket expenses. No guaranteed payments or management fees shall be paid without Member approval.') + '</p>';
-
-  html += art('ARTICLE VI &mdash; TAX MATTERS');
-  html += sec('6.1', 'Tax Classification', T.a6t);
-  html += sec('6.2', s ? 'Tax Contact and Responsible Party' : 'Partnership Representative', T.a6r);
-  html += sec('6.3', 'Withholding and Cooperation', s ? 'The Sole Member shall provide all tax forms required. The Company may withhold amounts required by law, treated as distributions to the Sole Member.' : 'Each Member shall provide required tax forms (W-8, W-9, etc.). Withheld amounts shall be treated as distributions. Each Member shall cooperate with all compliance obligations.');
-
-  html += art('ARTICLE VII &mdash; TRANSFERS');
-  html += sec('7.1', s ? 'Transfer of Membership Interest' : 'Restrictions on Transfer', T.t71);
-  html += sec('7.2', s ? 'Permitted Transfers' : 'Right of First Refusal', T.t72);
-  html += sec('7.3', s ? 'Death or Incapacity of the Sole Member' : 'Permitted Transfers', T.t73);
-  if (T.t74) html += sec('7.4', 'Admission of Transferee', T.t74);
-
-  html += art('ARTICLE VIII &mdash; DISSOLUTION AND WINDING UP');
-  html += sec('8.1','Events of Dissolution','The Company shall be dissolved only upon the occurrence of any event described in Section 1.5.');
-  html += sec('8.2','Winding Up',T.a82) + sec('8.3','Order of Distribution',T.a83) + sec('8.4','Certificate of Cancellation',T.a84);
-
-  html += art('ARTICLE IX &mdash; MISCELLANEOUS');
-  html += '<p class="doc-p"><strong>9.1 Amendments:</strong> This Agreement may be amended only by the ' + (s ? 'written consent of the Sole Member' : 'unanimous written consent of all Members') + '.</p>';
-  html += '<p class="doc-p"><strong>9.2 Governing Law:</strong> The laws of the State of Delaware, without regard to conflicts of law principles.</p>';
-  html += '<p class="doc-p"><strong>9.3 Entire Agreement:</strong> This Agreement, including all Exhibits, constitutes the entire agreement ' + (s ? 'of the Sole Member' : 'among the Members') + ' with respect to the Company.</p>';
-  html += '<p class="doc-p"><strong>9.4 Electronic Signatures:</strong> Signatures delivered via PDF, DocuSign, Adobe Sign, or similar platform shall be deemed original for all purposes.</p>';
-  html += '<p class="doc-p"><strong>9.5 Severability:</strong> If any provision is held invalid, the remaining provisions continue in full force and effect.</p>';
-  html += '<p class="doc-p"><strong>9.6 Notices:</strong> All notices shall be in writing, delivered by courier, certified mail, or email with confirmation.</p>';
-  html += '<p class="doc-p"><strong>9.7 Further Assurances:</strong> ' + (s ? 'The Sole Member' : 'Each Member') + ' shall execute such documents as may be reasonably necessary to carry out the purposes of this Agreement.</p>';
-
-  html += art('RATIFICATION AND ADOPTION');
-  html += '<p class="doc-p">' + (s ? 'The undersigned, being the Sole Member, hereby agrees, acknowledges, and certifies that the foregoing Operating Agreement is adopted as of <strong>' + esc(V.dtExec) + '</strong>, effective as of <strong>' + esc(V.dtForm) + '</strong>.' : 'The undersigned hereby agree, acknowledge, and certify that the foregoing Operating Agreement is adopted and approved as of <strong>' + esc(V.dtExec) + '</strong>, effective as of <strong>' + esc(V.dtForm) + '</strong>.') + '</p>';
-  html += '<div style="margin-top:18px">' + sigs + '</div>';
-  html += notaryHTML(mNames);
-
-  // EXHIBITS
-  if (s) {
-    html += '<div class="exhibit-banner">EXHIBIT 2 &mdash; SOLE MEMBER &amp; CAPITAL CONTRIBUTION</div>';
-    html += '<p class="doc-p"><strong>' + esc(V.co) + ' LLC</strong> &mdash; Effective Date: ' + esc(V.dtForm) + '</p>';
-    html += '<table class="doc-table"><tr><th>Sole Member</th><th>Address</th><th>Cash</th><th>Property/Services</th><th>Agreed Value</th><th>%</th></tr>';
-    html += '<tr><td>' + esc(V.smName||'[Name]') + '</td><td>' + esc(V.smAddr||'&mdash;') + '</td><td>US$' + esc(V.smCash) + '</td><td>' + esc(V.smProp) + '</td><td>US$' + esc(V.smPropVal) + '</td><td>100%</td></tr></table>';
-    html += sigBlockHTML('Sole Member', V.smName||'[Sole Member]', '100% Interest');
-    html += notaryHTML(V.smName||'[Sole Member]');
+  html+=art('ARTICLE II &mdash; CAPITAL CONTRIBUTIONS');
+  html+=sec('2.1','Initial '+(s?'Contribution':'Contributions'),T.s21);
+  html+=sec('2.2','Additional '+(s?'Contribution':'Contributions'),T.s22);
+  html+=sec('2.3','Capital Account',T.s23+' A separate capital account shall be maintained for '+(s?'the Sole Member':'each Member')+' in accordance with Treasury Regulation &sect; 1.704-1(b)(2)(iv).');
+  html+=art('ARTICLE III &mdash; PROFITS, LOSSES AND DISTRIBUTIONS');
+  html+=sec('3.1','Allocations',T.s31)+sec('3.2','Distributions',T.s32)+sec('3.3','Tax Distributions',T.s33)+sec('3.4','Limitation on Distributions',T.s34);
+  html+=art('ARTICLE IV &mdash; MANAGEMENT');
+  html+=sec('4.1',s?'Management Structure':'Manager-Managed Structure',T.s41);
+  html+=sec('4.2',s?'Authority':'Majority Vote Matters',T.s42);
+  html+=sec('4.3',s?(V.mgmt==='manager'?'Reserved Rights of the Sole Member':'Decision-Making'):'Unanimous Consent Matters',T.s43);
+  var nn=4;
+  if(T.s44){ html+=sec('4.4','Chief Executive Manager',T.s44); nn=5; }
+  html+=sec('4.'+(nn-1),'Exculpation',T.s45)+sec('4.'+nn,'Indemnification',T.s46);
+  html+=art('ARTICLE V &mdash; COMPENSATION AND REIMBURSEMENT');
+  html+='<p class="doc-p">'+(s?'The Sole Member may receive compensation, distributions, or reimbursements as determined by the Sole Member. The Company shall reimburse authorized out-of-pocket expenses.':'No Manager shall receive compensation unless approved in accordance with Section 4.3. The Company shall reimburse authorized out-of-pocket expenses. No guaranteed payments or management fees shall be paid without Member approval.')+'</p>';
+  html+=art('ARTICLE VI &mdash; TAX MATTERS');
+  html+=sec('6.1','Tax Classification',T.a6t);
+  html+=sec('6.2',s?'Tax Contact and Responsible Party':'Partnership Representative',T.a6r);
+  html+=sec('6.3','Withholding and Cooperation',s?'The Sole Member shall provide all tax forms required. The Company may withhold amounts required by law, treated as distributions to the Sole Member.':'Each Member shall provide required tax forms (W-8, W-9, etc.). Withheld amounts shall be treated as distributions. Each Member shall cooperate with all compliance obligations.');
+  html+=art('ARTICLE VII &mdash; TRANSFERS');
+  html+=sec('7.1',s?'Transfer of Membership Interest':'Restrictions on Transfer',T.t71);
+  html+=sec('7.2',s?'Permitted Transfers':'Right of First Refusal',T.t72);
+  html+=sec('7.3',s?'Death or Incapacity of the Sole Member':'Permitted Transfers',T.t73);
+  if(T.t74) html+=sec('7.4','Admission of Transferee',T.t74);
+  html+=art('ARTICLE VIII &mdash; DISSOLUTION AND WINDING UP');
+  html+=sec('8.1','Events of Dissolution','The Company shall be dissolved only upon the occurrence of any event described in Section 1.5.');
+  html+=sec('8.2','Winding Up',T.a82)+sec('8.3','Order of Distribution',T.a83)+sec('8.4','Certificate of Cancellation',T.a84);
+  html+=art('ARTICLE IX &mdash; MISCELLANEOUS');
+  html+='<p class="doc-p"><strong>9.1 Amendments:</strong> This Agreement may be amended only by the '+(s?'written consent of the Sole Member':'unanimous written consent of all Members')+'.</p>';
+  html+='<p class="doc-p"><strong>9.2 Governing Law:</strong> The laws of the State of Delaware, without regard to conflicts of law principles.</p>';
+  html+='<p class="doc-p"><strong>9.3 Entire Agreement:</strong> This Agreement, including all Exhibits, constitutes the entire agreement '+(s?'of the Sole Member':'among the Members')+' with respect to the Company.</p>';
+  html+='<p class="doc-p"><strong>9.4 Electronic Signatures:</strong> Signatures delivered via PDF, DocuSign, Adobe Sign, or similar platform shall be deemed original for all purposes.</p>';
+  html+='<p class="doc-p"><strong>9.5 Severability:</strong> If any provision is held invalid, the remaining provisions continue in full force and effect.</p>';
+  html+='<p class="doc-p"><strong>9.6 Notices:</strong> All notices shall be in writing, delivered by courier, certified mail, or email with confirmation.</p>';
+  html+='<p class="doc-p"><strong>9.7 Further Assurances:</strong> '+(s?'The Sole Member':'Each Member')+' shall execute such documents as may be reasonably necessary to carry out the purposes of this Agreement.</p>';
+  html+=art('RATIFICATION AND ADOPTION');
+  html+='<p class="doc-p">'+(s?'The undersigned, being the Sole Member, hereby agrees, acknowledges, and certifies that the foregoing Operating Agreement is adopted as of <strong>'+esc(V.dtExec)+'</strong>, effective as of <strong>'+esc(V.dtForm)+'</strong>.':'The undersigned hereby agree, acknowledge, and certify that the foregoing Operating Agreement is adopted and approved as of <strong>'+esc(V.dtExec)+'</strong>, effective as of <strong>'+esc(V.dtForm)+'</strong>.')+'</p>';
+  html+='<div style="margin-top:18px">'+sigs+'</div>';
+  html+=notaryHTML(mNames);
+  if(s){
+    html+='<div class="exhibit-banner">EXHIBIT 2 &mdash; SOLE MEMBER &amp; CAPITAL CONTRIBUTION</div>';
+    html+='<p class="doc-p"><strong>'+esc(V.co)+' LLC</strong> &mdash; Effective Date: '+esc(V.dtForm)+'</p>';
+    html+='<table class="doc-table"><tr><th>Sole Member</th><th>Address</th><th>Cash</th><th>Property/Services</th><th>Agreed Value</th><th>%</th></tr>';
+    html+='<tr><td>'+esc(V.smName||'[Name]')+'</td><td>'+esc(V.smAddr||'&mdash;')+'</td><td>US$'+esc(V.smCash)+'</td><td>'+esc(V.smProp)+'</td><td>US$'+esc(V.smPropVal)+'</td><td>100%</td></tr></table>';
+    html+=sigBlockHTML('Sole Member',V.smName||'[Sole Member]','100% Interest');
+    html+=notaryHTML(V.smName||'[Sole Member]');
   } else {
-    html += '<div class="exhibit-banner">EXHIBIT 1 &mdash; LISTING OF MANAGERS</div>';
-    html += sigBlockHTML('Chief Executive Manager', V.ceo||'[Manager Name]', '');
-    if (V.mgr2) html += sigBlockHTML('Manager 2', V.mgr2, '');
-    html += '<div class="exhibit-banner">EXHIBIT 2 &mdash; LISTING OF MEMBERS</div>';
-    html += '<table class="doc-table"><tr><th>Member</th><th>Address</th><th>% Interest</th></tr>' + mRows + '<tr class="total"><td>Total</td><td></td><td>' + V.tp + '%</td></tr></table>';
-    html += '<div style="margin-top:14px">' + sigs + '</div>';
-    html += '<div class="exhibit-banner">EXHIBIT 3 &mdash; CAPITAL CONTRIBUTIONS</div>';
-    html += '<table class="doc-table"><tr><th>Member</th><th>Cash</th><th>Property/Services</th><th>Agreed Value</th><th>%</th></tr>' + cRows + '<tr class="total"><td>Total</td><td>&mdash;</td><td>&mdash;</td><td>US$' + esc(V.cap) + '</td><td>' + V.tp + '%</td></tr></table>';
-    html += '<div style="margin-top:14px">' + sigs + '</div>';
-    html += notaryHTML(mNames);
+    html+='<div class="exhibit-banner">EXHIBIT 1 &mdash; LISTING OF MANAGERS</div>';
+    html+=sigBlockHTML('Chief Executive Manager',V.ceo||'[Manager Name]','');
+    if(V.mgr2) html+=sigBlockHTML('Manager 2',V.mgr2,'');
+    html+='<div class="exhibit-banner">EXHIBIT 2 &mdash; LISTING OF MEMBERS</div>';
+    html+='<table class="doc-table"><tr><th>Member</th><th>Address</th><th>% Interest</th></tr>'+mRows+'<tr class="total"><td>Total</td><td></td><td>'+V.tp+'%</td></tr></table>';
+    html+='<div style="margin-top:14px">'+sigs+'</div>';
+    html+='<div class="exhibit-banner">EXHIBIT 3 &mdash; CAPITAL CONTRIBUTIONS</div>';
+    html+='<table class="doc-table"><tr><th>Member</th><th>Cash</th><th>Property/Services</th><th>Agreed Value</th><th>%</th></tr>'+cRows+'<tr class="total"><td>Total</td><td>&mdash;</td><td>&mdash;</td><td>US$'+esc(V.cap)+'</td><td>'+V.tp+'%</td></tr></table>';
+    html+='<div style="margin-top:14px">'+sigs+'</div>';
+    html+=notaryHTML(mNames);
   }
-
-  html += '</div>';
-  html += '<div class="doc-footer"><span>Confidential &middot; Dominium Global Advisory Corp &middot; Delaware LLC Operating Agreement</span><span class="pg">&copy; ' + new Date().getFullYear() + '</span></div>';
-
-  document.getElementById('doc-preview').innerHTML = html;
+  html+='</div><div class="doc-footer"><span>Confidential &middot; Dominium Global Advisory Corp &middot; Delaware LLC Operating Agreement</span><span class="pg">&copy; '+new Date().getFullYear()+'</span></div>';
+  document.getElementById('doc-preview').innerHTML=html;
 }
 
-// ── GENERATE DOCX ──────────────────────────────────────────────────────────
-function generateDocx() {
-  var btn = document.getElementById('gen-btn');
-  var msg = document.getElementById('status-msg');
-
-  if (typeof docx === 'undefined') {
-    msg.className = 'status err';
-    msg.textContent = 'Library not loaded. Please refresh the page.';
-    return;
-  }
-
-  btn.disabled = true;
-  msg.className = 'status';
-  msg.textContent = 'Generating...';
-
-  try {
-    var D = docx;
-    var V = getVars();
-    var T = buildText(V);
-    var s = V.isSingle;
-
-    var WN='0C3652', WG='DAA142', WGR='999999', WW='FFFFFF';
-    var nb = {style:D.BorderStyle.NIL};
-
-    function sb(c,sz) { return {style:D.BorderStyle.SINGLE,size:sz||4,color:c}; }
-    function cO(fill,brd) { return {shading:{type:D.ShadingType.CLEAR,fill:fill},borders:brd,margins:{top:75,bottom:75,left:100,right:100}}; }
-    function f(t,o) { return new D.TextRun(Object.assign({text:String(t||''),font:'Arial',size:20},o||{})); }
-    function fb(t,o) { return f(t,Object.assign({bold:true},o||{})); }
-    function fg(t,o) { return f(t,Object.assign({color:WG},o||{})); }
-    function pp(r,o) { return new D.Paragraph(Object.assign({children:Array.isArray(r)?r:[r],spacing:{after:95}},o||{})); }
-    function pj(r,o) { return pp(r,Object.assign({alignment:D.AlignmentType.JUSTIFIED},o||{})); }
-    function ah(t) { return new D.Paragraph({children:[fb(t,{size:21,color:WN})],spacing:{before:290,after:75},border:{bottom:{style:D.BorderStyle.SINGLE,size:4,color:WG}}}); }
-    function sh(n,t) { return new D.Paragraph({children:[fg(n+'  '),fb(t,{color:WN})],spacing:{before:155,after:50}}); }
-
-    function dSig(role,name,pct) {
+function generateDocx(){
+  var btn=document.getElementById('gen-btn');
+  var msg=document.getElementById('status-msg');
+  if(typeof docx==='undefined'){ msg.className='status err'; msg.textContent='Library not loaded. Please refresh the page.'; return; }
+  btn.disabled=true; msg.className='status'; msg.textContent='Generating...';
+  try{
+    var D=docx;
+    var V=getVars(); var T=buildText(V); var s=V.isSingle;
+    var WN='0C3652',WG='DAA142',WGR='999999',WW='FFFFFF';
+    var nb={style:D.BorderStyle.NIL};
+    function sb(c,sz){ return {style:D.BorderStyle.SINGLE,size:sz||4,color:c}; }
+    function cO(fill,brd){ return {shading:{type:D.ShadingType.CLEAR,fill:fill},borders:brd,margins:{top:75,bottom:75,left:100,right:100}}; }
+    function f(t,o){ return new D.TextRun(Object.assign({text:String(t||''),font:'Arial',size:20},o||{})); }
+    function fb(t,o){ return f(t,Object.assign({bold:true},o||{})); }
+    function fg(t,o){ return f(t,Object.assign({color:WG},o||{})); }
+    function pp(r,o){ return new D.Paragraph(Object.assign({children:Array.isArray(r)?r:[r],spacing:{after:95}},o||{})); }
+    function pj(r,o){ return pp(r,Object.assign({alignment:D.AlignmentType.JUSTIFIED},o||{})); }
+    function ah(t){ return new D.Paragraph({children:[fb(t,{size:21,color:WN})],spacing:{before:290,after:75},border:{bottom:{style:D.BorderStyle.SINGLE,size:4,color:WG}}}); }
+    function sh(n,t){ return new D.Paragraph({children:[fg(n+'  '),fb(t,{color:WN})],spacing:{before:155,after:50}}); }
+    function dSig(role,name,pct){
       return [
         pp([fb(role+(pct?' \u2014 '+pct:''),{size:16,color:WGR})],{spacing:{before:140,after:30}}),
         pp([f('Name: ',{size:18,color:WGR}),fb(name,{size:18,color:WN})],{spacing:{after:40}}),
@@ -726,8 +654,7 @@ function generateDocx() {
         pp([f(' ',{size:6})],{spacing:{after:85}})
       ];
     }
-
-    function dNotary(names) {
+    function dNotary(names){
       return [
         new D.Paragraph({children:[fb('OPTIONAL ACKNOWLEDGMENT \u2014 NOTARIZATION',{size:19,color:WN})],spacing:{before:320,after:75},border:{bottom:{style:D.BorderStyle.SINGLE,size:3,color:WG}}}),
         pp([f('State of: _____________________     County of: _____________________',{size:18})],{spacing:{after:80}}),
@@ -744,34 +671,23 @@ function generateDocx() {
         pp([fb('My Commission Expires: ',{size:18,color:WG}),f(NOTARY_EXP,{size:18,color:WN})],{spacing:{after:60}})
       ];
     }
-
-    function dTable(hs,rows,tot) {
-      var tr = [];
-      tr.push(new D.TableRow({children:hs.map(function(h){ return new D.TableCell({children:[pp([fb(h,{size:15,color:WG})],{spacing:{after:0}})], shading:{type:D.ShadingType.CLEAR,fill:WN}, borders:{top:nb,bottom:nb,left:nb,right:nb}, margins:{top:60,bottom:60,left:85,right:85}}); })}));
-      for (var ri=0; ri<rows.length; ri++) {
-        tr.push(new D.TableRow({children:rows[ri].map(function(cell){ return new D.TableCell({children:[pp([f(cell||'\u2014',{size:17})],{spacing:{after:0}})], shading:{type:D.ShadingType.CLEAR,fill:'FFFFFF'}, borders:{top:sb('eeeeee',2),bottom:sb('eeeeee',2),left:nb,right:nb}, margins:{top:55,bottom:55,left:85,right:85}}); })}));
-      }
-      tr.push(new D.TableRow({children:tot.map(function(cell){ return new D.TableCell({children:[pp([fb(cell||'',{color:WN,size:17})],{spacing:{after:0}})], shading:{type:D.ShadingType.CLEAR,fill:'F9F7F2'}, borders:{top:sb(WG,3),bottom:nb,left:nb,right:nb}, margins:{top:55,bottom:55,left:85,right:85}}); })}));
+    function dTable(hs,rows,tot){
+      var tr=[];
+      tr.push(new D.TableRow({children:hs.map(function(h){ return new D.TableCell({children:[pp([fb(h,{size:15,color:WG})],{spacing:{after:0}})],shading:{type:D.ShadingType.CLEAR,fill:WN},borders:{top:nb,bottom:nb,left:nb,right:nb},margins:{top:60,bottom:60,left:85,right:85}}); })}));
+      for(var ri=0;ri<rows.length;ri++) tr.push(new D.TableRow({children:rows[ri].map(function(cell){ return new D.TableCell({children:[pp([f(cell||'\u2014',{size:17})],{spacing:{after:0}})],shading:{type:D.ShadingType.CLEAR,fill:'FFFFFF'},borders:{top:sb('eeeeee',2),bottom:sb('eeeeee',2),left:nb,right:nb},margins:{top:55,bottom:55,left:85,right:85}}); })}));
+      tr.push(new D.TableRow({children:tot.map(function(cell){ return new D.TableCell({children:[pp([fb(cell||'',{color:WN,size:17})],{spacing:{after:0}})],shading:{type:D.ShadingType.CLEAR,fill:'F9F7F2'},borders:{top:sb(WG,3),bottom:nb,left:nb,right:nb},margins:{top:55,bottom:55,left:85,right:85}}); })}));
       return new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:tr});
     }
+    function exH(t){ return new D.Paragraph({children:[fb(t,{size:19,color:WW})],alignment:D.AlignmentType.CENTER,spacing:{before:340,after:170},shading:{type:D.ShadingType.CLEAR,fill:WN},border:{top:{style:D.BorderStyle.SINGLE,size:5,color:WG}}}); }
+    function push(ch,arr){ for(var x=0;x<arr.length;x++) ch.push(arr[x]); }
 
-    function exH(t) {
-      return new D.Paragraph({children:[fb(t,{size:19,color:WW})],alignment:D.AlignmentType.CENTER,spacing:{before:340,after:170},shading:{type:D.ShadingType.CLEAR,fill:WN},border:{top:{style:D.BorderStyle.SINGLE,size:5,color:WG}}});
-    }
-
-    function pushSigs(ch, arr) { for(var x=0;x<arr.length;x++) ch.push(arr[x]); }
-
-    var ch = [];
-
-    // Title page
+    var ch=[];
     ch.push(pp([fb('LIMITED LIABILITY COMPANY OPERATING AGREEMENT',{size:24,color:WN})],{alignment:D.AlignmentType.CENTER,spacing:{after:50}}));
     ch.push(pp([fb('FOR',{size:19,color:WGR})],{alignment:D.AlignmentType.CENTER,spacing:{after:50}}));
     ch.push(pp([fb(V.co+' LLC',{size:26,color:WG})],{alignment:D.AlignmentType.CENTER,spacing:{after:50}}));
     ch.push(pp([f('A Delaware Limited Liability Company \u00b7 '+(s?'Single-Member':'Multi-Member'),{color:WGR,size:17})],{alignment:D.AlignmentType.CENTER,spacing:{after:50}}));
     ch.push(pp([fb('Date of Formation: ',{size:17,color:WG}),f(V.dtForm,{size:17,color:WN}),f('     '),fb('Date of Agreement: ',{size:17,color:WG}),f(V.dtExec,{size:17,color:WN})],{alignment:D.AlignmentType.CENTER,spacing:{after:270},border:{bottom:{style:D.BorderStyle.SINGLE,size:4,color:WG}}}));
-    ch.push(pj([f(T.intro)]));
-    ch.push(pj([f(T.recital)]));
-
+    ch.push(pj([f(T.intro)])); ch.push(pj([f(T.recital)]));
     ch.push(ah('ARTICLE I \u2014 COMPANY FORMATION'));
     ch.push(sh('1.1','Formation')); ch.push(pj([f(T.formation)]));
     ch.push(sh('1.2','Effective Date and Date of Execution')); ch.push(pj([f(T.s12)]));
@@ -779,26 +695,23 @@ function generateDocx() {
     ch.push(sh('1.4','Registered Agent')); ch.push(pp([fb(V.ra)])); ch.push(pp([f(V.raAddr)]));
     ch.push(sh('1.5','Term')); ch.push(pj([f(T.s15)]));
     ch.push(sh('1.6','Continuance')); ch.push(pj([f(T.s16)]));
-    ch.push(sh('1.7','Business Purpose')); ch.push(pj([f(T.purpose)]));
+    ch.push(sh('1.7','Business Purpose')); ch.push(pj([f(V.purpose)]));
     ch.push(sh('1.8','Principal Office')); ch.push(pp([fb('Principal Office: '),f(V.addr)]));
-    if (V.mail) ch.push(pp([fb('Mailing Address: '),f(V.mail)]));
+    if(V.mail) ch.push(pp([fb('Mailing Address: '),f(V.mail)]));
     ch.push(sh('1.9',s?'Sole Membership Interest':'Percentage Interests')); ch.push(pj([f(T.s19)]));
-    if (!s) {
+    if(!s){
       ch.push(dTable(['Member','Address','% Interest'],multiMembers.map(function(m){ return [m.name||'[Member]',m.addr||'\u2014',m.pct?m.pct+'%':'\u2014']; }),['Total','',V.tp+'%']));
       ch.push(sh('1.10','Admission of Additional Members')); ch.push(pj([f(T.s110)]));
     }
-
     ch.push(ah('ARTICLE II \u2014 CAPITAL CONTRIBUTIONS'));
     ch.push(sh('2.1','Initial '+(s?'Contribution':'Contributions'))); ch.push(pj([f(T.s21)]));
     ch.push(sh('2.2','Additional '+(s?'Contribution':'Contributions'))); ch.push(pj([f(T.s22)]));
     ch.push(sh('2.3','Capital Account')); ch.push(pj([f(T.s23+' A separate capital account shall be maintained for '+(s?'the Sole Member':'each Member')+' in accordance with Treasury Regulation \u00a7 1.704-1(b)(2)(iv).')]));
-
     ch.push(ah('ARTICLE III \u2014 PROFITS, LOSSES AND DISTRIBUTIONS'));
     ch.push(sh('3.1','Allocations')); ch.push(pj([f(T.s31)]));
     ch.push(sh('3.2','Distributions')); ch.push(pj([f(T.s32)]));
     ch.push(sh('3.3','Tax Distributions')); ch.push(pj([f(T.s33)]));
     ch.push(sh('3.4','Limitation on Distributions')); ch.push(pj([f(T.s34)]));
-
     ch.push(ah('ARTICLE IV \u2014 MANAGEMENT'));
     ch.push(sh('4.1',s?'Management Structure':'Manager-Managed Structure')); ch.push(pj([f(T.s41)]));
     ch.push(sh('4.2',s?'Authority':'Majority Vote Matters')); ch.push(pj([f(T.s42)]));
@@ -807,27 +720,22 @@ function generateDocx() {
     if(T.s44){ ch.push(sh('4.4','Chief Executive Manager')); ch.push(pp([f(T.s44)])); nn=5; }
     ch.push(sh('4.'+(nn-1),'Exculpation')); ch.push(pj([f(T.s45)]));
     ch.push(sh('4.'+nn,'Indemnification')); ch.push(pj([f(T.s46)]));
-
     ch.push(ah('ARTICLE V \u2014 COMPENSATION AND REIMBURSEMENT'));
     ch.push(pj([f(s?'The Sole Member may receive compensation, distributions, or reimbursements as determined by the Sole Member. The Company shall reimburse authorized out-of-pocket expenses.':'No Manager shall receive compensation unless approved in accordance with Section 4.3. The Company shall reimburse authorized out-of-pocket expenses. No guaranteed payments or management fees shall be paid without Member approval.')]));
-
     ch.push(ah('ARTICLE VI \u2014 TAX MATTERS'));
     ch.push(sh('6.1','Tax Classification')); ch.push(pj([f(T.a6t)]));
     ch.push(sh('6.2',s?'Tax Contact and Responsible Party':'Partnership Representative')); ch.push(pj([f(T.a6r)]));
     ch.push(sh('6.3','Withholding and Cooperation')); ch.push(pj([f(s?'The Sole Member shall provide all tax forms required. The Company may withhold amounts required by law, treated as distributions to the Sole Member.':'Each Member shall provide required tax forms (W-8, W-9, etc.). Withheld amounts shall be treated as distributions. Each Member shall cooperate with all compliance obligations.')]));
-
     ch.push(ah('ARTICLE VII \u2014 TRANSFERS'));
     ch.push(sh('7.1',s?'Transfer of Membership Interest':'Restrictions on Transfer')); ch.push(pj([f(T.t71)]));
     ch.push(sh('7.2',s?'Permitted Transfers':'Right of First Refusal')); ch.push(pj([f(T.t72)]));
     ch.push(sh('7.3',s?'Death or Incapacity of the Sole Member':'Permitted Transfers')); ch.push(pj([f(T.t73)]));
     if(T.t74){ ch.push(sh('7.4','Admission of Transferee')); ch.push(pj([f(T.t74)])); }
-
     ch.push(ah('ARTICLE VIII \u2014 DISSOLUTION AND WINDING UP'));
     ch.push(sh('8.1','Events of Dissolution')); ch.push(pj([f('The Company shall be dissolved only upon the occurrence of any event described in Section 1.5.')]));
     ch.push(sh('8.2','Winding Up')); ch.push(pj([f(T.a82)]));
     ch.push(sh('8.3','Order of Distribution')); ch.push(pj([f(T.a83)]));
     ch.push(sh('8.4','Certificate of Cancellation')); ch.push(pj([f(T.a84)]));
-
     ch.push(ah('ARTICLE IX \u2014 MISCELLANEOUS'));
     ch.push(pp([fb('9.1 Amendments: ',{color:WN}),f('This Agreement may be amended only by the '+(s?'written consent of the Sole Member':'unanimous written consent of all Members')+'.')]));
     ch.push(pp([fb('9.2 Governing Law: ',{color:WN}),f('The laws of the State of Delaware, without regard to conflicts of law principles.')]));
@@ -836,103 +744,70 @@ function generateDocx() {
     ch.push(pp([fb('9.5 Severability: ',{color:WN}),f('If any provision is held invalid, the remaining provisions continue in full force and effect.')]));
     ch.push(pp([fb('9.6 Notices: ',{color:WN}),f('All notices shall be in writing, delivered by courier, certified mail, or email with confirmation.')]));
     ch.push(pp([fb('9.7 Further Assurances: ',{color:WN}),f((s?'The Sole Member':'Each Member')+' shall execute such documents as may be reasonably necessary to carry out the purposes of this Agreement.')]));
-
     ch.push(ah('RATIFICATION AND ADOPTION'));
     ch.push(pj([f(s?'The undersigned, being the Sole Member, hereby agrees, acknowledges, and certifies that the foregoing Operating Agreement is adopted as of ':'The undersigned hereby agree, acknowledge, and certify that the foregoing Operating Agreement is adopted and approved as of '),fb(V.dtExec),f(', effective as of '),fb(V.dtForm),f('.')]));
-
-    var mNames = '';
-    if (s) {
-      var nm = V.smName || '[Sole Member]';
-      pushSigs(ch, dSig('Sole Member', nm, '100% Interest'));
-      if (V.mgmt === 'manager' && V.mgrName) pushSigs(ch, dSig('Manager', V.mgrName, ''));
-      mNames = nm;
+    var mNames='';
+    if(s){
+      var nm=V.smName||'[Sole Member]';
+      push(ch,dSig('Sole Member',nm,'100% Interest'));
+      if(V.mgmt==='manager'&&V.mgrName) push(ch,dSig('Manager',V.mgrName,''));
+      mNames=nm;
     } else {
-      for (var i=0; i<multiMembers.length; i++) {
-        var m = multiMembers[i];
-        var nm = m.name || ('[Member '+(i+1)+']');
-        pushSigs(ch, dSig('Member '+(i+1), nm, m.pct?m.pct+'% Interest':''));
-        mNames += (mNames?', ':'')+nm;
+      for(var i=0;i<multiMembers.length;i++){
+        var m=multiMembers[i];
+        var nm=m.name||('[Member '+(i+1)+']');
+        push(ch,dSig('Member '+(i+1),nm,m.pct?m.pct+'% Interest':''));
+        mNames+=(mNames?', ':'')+nm;
       }
     }
-    pushSigs(ch, dNotary(mNames));
-
-    // Exhibits
-    if (s) {
+    push(ch,dNotary(mNames));
+    if(s){
       ch.push(exH('EXHIBIT 2 \u2014 SOLE MEMBER & CAPITAL CONTRIBUTION'));
       ch.push(dTable(['Sole Member','Address','Cash','Property/Services','Agreed Value','%'],
         [[V.smName||'[Name]',V.smAddr||'\u2014','US$'+V.smCash,V.smProp,'US$'+V.smPropVal,'100%']],
         ['Total','','\u2014','\u2014','US$'+V.cap,'100%']));
-      pushSigs(ch, dSig('Sole Member', V.smName||'[Sole Member]', '100% Interest'));
-      pushSigs(ch, dNotary(V.smName||'[Sole Member]'));
+      push(ch,dSig('Sole Member',V.smName||'[Sole Member]','100% Interest'));
+      push(ch,dNotary(V.smName||'[Sole Member]'));
     } else {
       ch.push(exH('EXHIBIT 1 \u2014 LISTING OF MANAGERS'));
-      pushSigs(ch, dSig('Chief Executive Manager', V.ceo||'[Manager Name]', ''));
-      if (V.mgr2) pushSigs(ch, dSig('Manager 2', V.mgr2, ''));
+      push(ch,dSig('Chief Executive Manager',V.ceo||'[Manager Name]',''));
+      if(V.mgr2) push(ch,dSig('Manager 2',V.mgr2,''));
       ch.push(exH('EXHIBIT 2 \u2014 LISTING OF MEMBERS'));
       ch.push(dTable(['Member','Address','% Interest'],multiMembers.map(function(m){ return [m.name||'[Member]',m.addr||'\u2014',m.pct?m.pct+'%':'\u2014']; }),['Total','',V.tp+'%']));
-      for (var i=0; i<multiMembers.length; i++) {
-        var m = multiMembers[i];
-        pushSigs(ch, dSig('Member '+(i+1), m.name||'[Member '+(i+1)+']', m.pct?m.pct+'% Interest':''));
-      }
+      for(var i=0;i<multiMembers.length;i++){ var m=multiMembers[i]; push(ch,dSig('Member '+(i+1),m.name||'[Member '+(i+1)+']',m.pct?m.pct+'% Interest':'')); }
       ch.push(exH('EXHIBIT 3 \u2014 CAPITAL CONTRIBUTIONS'));
       ch.push(dTable(['Member','Cash','Property/Services','Agreed Value','%'],multiMembers.map(function(m){ return [m.name||'[Member]','US$'+(m.cash||'0'),m.prop||'N/A','US$'+(m.propval||'0'),m.pct?m.pct+'%':'\u2014']; }),['Total','\u2014','\u2014','US$'+V.cap,V.tp+'%']));
-      for (var i=0; i<multiMembers.length; i++) {
-        var m = multiMembers[i];
-        pushSigs(ch, dSig('Member '+(i+1), m.name||'[Member '+(i+1)+']', m.pct?m.pct+'% Interest':''));
-      }
-      pushSigs(ch, dNotary(mNames));
+      for(var i=0;i<multiMembers.length;i++){ var m=multiMembers[i]; push(ch,dSig('Member '+(i+1),m.name||'[Member '+(i+1)+']',m.pct?m.pct+'% Interest':'')); }
+      push(ch,dNotary(mNames));
     }
-
-    // Header
     var hdrP;
-    if (logoDataUrl) {
-      var b64 = logoDataUrl.split(',')[1];
-      hdrP = new D.Paragraph({children:[new D.ImageRun({data:b64,transformation:{width:90,height:30},type:'png'})]});
-    } else {
-      hdrP = new D.Paragraph({children:[fb('DOMINIUM  Global Advisory Corp',{size:15,color:WG})]});
-    }
-
-    var doc = new D.Document({sections:[{
+    if(logoDataUrl){ var b64=logoDataUrl.split(',')[1]; hdrP=new D.Paragraph({children:[new D.ImageRun({data:b64,transformation:{width:90,height:30},type:'png'})]}); }
+    else hdrP=new D.Paragraph({children:[fb('DOMINIUM  Global Advisory Corp',{size:15,color:WG})]});
+    var doc=new D.Document({sections:[{
       properties:{page:{margin:{top:1080,bottom:1080,left:1200,right:1200}}},
-      headers:{default:new D.Header({children:[
-        new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:[new D.TableRow({children:[
-          new D.TableCell({children:[hdrP], shading:{type:D.ShadingType.CLEAR,fill:WN}, borders:{top:nb,bottom:nb,left:nb,right:nb}, margins:{top:95,bottom:95,left:150,right:80}}),
-          new D.TableCell({children:[new D.Paragraph({alignment:D.AlignmentType.RIGHT,children:[f(V.co+' LLC \u00b7 Delaware \u00b7 '+V.dtExec,{size:13,color:WGR})]})], shading:{type:D.ShadingType.CLEAR,fill:WN}, borders:{top:nb,bottom:nb,left:nb,right:nb}, margins:{top:95,bottom:95,left:80,right:150}})
-        ]})]})
-      ]})},
-      footers:{default:new D.Footer({children:[
-        new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[
-          f('Confidential \u00b7 Dominium Global Advisory Corp \u00b7 Delaware LLC Operating Agreement  ',{size:13,color:WGR}),
-          new D.TextRun({children:[D.PageNumber.CURRENT],font:'Arial',size:13,color:WG,bold:true})
-        ],border:{top:{style:D.BorderStyle.SINGLE,size:2,color:WG}}})
-      ]})},
+      headers:{default:new D.Header({children:[new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:[new D.TableRow({children:[
+        new D.TableCell({children:[hdrP],shading:{type:D.ShadingType.CLEAR,fill:WN},borders:{top:nb,bottom:nb,left:nb,right:nb},margins:{top:95,bottom:95,left:150,right:80}}),
+        new D.TableCell({children:[new D.Paragraph({alignment:D.AlignmentType.RIGHT,children:[f(V.co+' LLC \u00b7 Delaware \u00b7 '+V.dtExec,{size:13,color:WGR})]})],shading:{type:D.ShadingType.CLEAR,fill:WN},borders:{top:nb,bottom:nb,left:nb,right:nb},margins:{top:95,bottom:95,left:80,right:150}})
+      ]})]})]})}},
+      footers:{default:new D.Footer({children:[new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[f('Confidential \u00b7 Dominium Global Advisory Corp \u00b7 Delaware LLC Operating Agreement  ',{size:13,color:WGR}),new D.TextRun({children:[D.PageNumber.CURRENT],font:'Arial',size:13,color:WG,bold:true})],border:{top:{style:D.BorderStyle.SINGLE,size:2,color:WG}}})]})},
       children:ch
     }]});
-
-    D.Packer.toBlob(doc).then(function(blob) {
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'OperatingAgreement_' + V.co.replace(/\s+/g,'_') + '_LLC.docx';
-      a.click();
+    D.Packer.toBlob(doc).then(function(blob){
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement('a');
+      a.href=url; a.download='OperatingAgreement_'+V.co.replace(/\s+/g,'_')+'_LLC.docx'; a.click();
       URL.revokeObjectURL(url);
-      msg.className = 'status ok';
-      msg.textContent = 'Document generated successfully!';
-      btn.disabled = false;
+      msg.className='status ok'; msg.textContent='Document generated successfully!';
+      btn.disabled=false;
     });
-
-  } catch(e) {
+  } catch(e){
     console.error(e);
-    msg.className = 'status err';
-    msg.textContent = 'Error: ' + e.message;
-    btn.disabled = false;
+    msg.className='status err'; msg.textContent='Error: '+e.message;
+    btn.disabled=false;
   }
 }
 
-// ── INIT ───────────────────────────────────────────────────────────────────
-window.onload = function() {
-  updatePreview();
-};
+window.onload=function(){ updatePreview(); };
 </script>
 </body>
 </html>
