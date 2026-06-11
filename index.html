@@ -637,6 +637,7 @@ function generateDocx(){
     var nb={style:D.BorderStyle.NIL};
     function sb(c,sz){ return {style:D.BorderStyle.SINGLE,size:sz||4,color:c}; }
     function cO(fill,brd){ return {shading:{type:D.ShadingType.CLEAR,fill:fill},borders:brd,margins:{top:75,bottom:75,left:100,right:100}}; }
+    function tcell(children,fill,brd,margins){ return new D.TableCell({children:children,shading:{type:D.ShadingType.CLEAR,fill:fill},borders:brd,margins:margins}); }
     function f(t,o){ return new D.TextRun(Object.assign({text:String(t||''),font:'Arial',size:20},o||{})); }
     function fb(t,o){ return f(t,Object.assign({bold:true},o||{})); }
     function fg(t,o){ return f(t,Object.assign({color:WG},o||{})); }
@@ -673,9 +674,9 @@ function generateDocx(){
     }
     function dTable(hs,rows,tot){
       var tr=[];
-      tr.push(new D.TableRow({children:hs.map(function(h){ return new D.TableCell({children:[pp([fb(h,{size:15,color:WG})],{spacing:{after:0}})],shading:{type:D.ShadingType.CLEAR,fill:WN},borders:{top:nb,bottom:nb,left:nb,right:nb},margins:{top:60,bottom:60,left:85,right:85}}); })}));
-      for(var ri=0;ri<rows.length;ri++) tr.push(new D.TableRow({children:rows[ri].map(function(cell){ return new D.TableCell({children:[pp([f(cell||'\u2014',{size:17})],{spacing:{after:0}})],shading:{type:D.ShadingType.CLEAR,fill:'FFFFFF'},borders:{top:sb('eeeeee',2),bottom:sb('eeeeee',2),left:nb,right:nb},margins:{top:55,bottom:55,left:85,right:85}}); })}));
-      tr.push(new D.TableRow({children:tot.map(function(cell){ return new D.TableCell({children:[pp([fb(cell||'',{color:WN,size:17})],{spacing:{after:0}})],shading:{type:D.ShadingType.CLEAR,fill:'F9F7F2'},borders:{top:sb(WG,3),bottom:nb,left:nb,right:nb},margins:{top:55,bottom:55,left:85,right:85}}); })}));
+      tr.push(new D.TableRow({children:hs.map(function(h){ return tcell([pp([fb(h,{size:15,color:WG})],{spacing:{after:0}})],WN,{top:nb,bottom:nb,left:nb,right:nb},{top:60,bottom:60,left:85,right:85}); })}));
+      for(var ri=0;ri<rows.length;ri++) tr.push(new D.TableRow({children:rows[ri].map(function(cell){ return tcell([pp([f(cell||'\u2014',{size:17})],{spacing:{after:0}})],'FFFFFF',{top:sb('eeeeee',2),bottom:sb('eeeeee',2),left:nb,right:nb},{top:55,bottom:55,left:85,right:85}); })}));
+      tr.push(new D.TableRow({children:tot.map(function(cell){ return tcell([pp([fb(cell||'',{color:WN,size:17})],{spacing:{after:0}})],'F9F7F2',{top:sb(WG,3),bottom:nb,left:nb,right:nb},{top:55,bottom:55,left:85,right:85}); })}));
       return new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:tr});
     }
     function exH(t){ return new D.Paragraph({children:[fb(t,{size:19,color:WW})],alignment:D.AlignmentType.CENTER,spacing:{before:340,after:170},shading:{type:D.ShadingType.CLEAR,fill:WN},border:{top:{style:D.BorderStyle.SINGLE,size:5,color:WG}}}); }
@@ -781,14 +782,17 @@ function generateDocx(){
       push(ch,dNotary(mNames));
     }
     var hdrP;
-    if(logoDataUrl){ var b64=logoDataUrl.split(',')[1]; hdrP=new D.Paragraph({children:[new D.ImageRun({data:b64,transformation:{width:90,height:30},type:'png'})]}); }
-    else hdrP=new D.Paragraph({children:[fb('DOMINIUM  Global Advisory Corp',{size:15,color:WG})]});
+    if(logoDataUrl){
+      var b64=logoDataUrl.split(',')[1];
+      hdrP=new D.Paragraph({children:[new D.ImageRun({data:b64,transformation:{width:90,height:30},type:'png'})]});
+    } else {
+      hdrP=new D.Paragraph({children:[fb('DOMINIUM  Global Advisory Corp',{size:15,color:WG})]});
+    }
+    var hdrCell1 = tcell([hdrP],WN,{top:nb,bottom:nb,left:nb,right:nb},{top:95,bottom:95,left:150,right:80});
+    var hdrCell2 = tcell([new D.Paragraph({alignment:D.AlignmentType.RIGHT,children:[f(V.co+' LLC \u00b7 Delaware \u00b7 '+V.dtExec,{size:13,color:WGR})]})],WN,{top:nb,bottom:nb,left:nb,right:nb},{top:95,bottom:95,left:80,right:150});
     var doc=new D.Document({sections:[{
       properties:{page:{margin:{top:1080,bottom:1080,left:1200,right:1200}}},
-      headers:{default:new D.Header({children:[new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:[new D.TableRow({children:[
-        new D.TableCell({children:[hdrP],shading:{type:D.ShadingType.CLEAR,fill:WN},borders:{top:nb,bottom:nb,left:nb,right:nb},margins:{top:95,bottom:95,left:150,right:80}}),
-        new D.TableCell({children:[new D.Paragraph({alignment:D.AlignmentType.RIGHT,children:[f(V.co+' LLC \u00b7 Delaware \u00b7 '+V.dtExec,{size:13,color:WGR})]})],shading:{type:D.ShadingType.CLEAR,fill:WN},borders:{top:nb,bottom:nb,left:nb,right:nb},margins:{top:95,bottom:95,left:80,right:150}})
-      ]})]})]})}},
+      headers:{default:new D.Header({children:[new D.Table({width:{size:100,type:D.WidthType.PERCENTAGE},rows:[new D.TableRow({children:[hdrCell1,hdrCell2]})]})]})}},
       footers:{default:new D.Footer({children:[new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[f('Confidential \u00b7 Dominium Global Advisory Corp \u00b7 Delaware LLC Operating Agreement  ',{size:13,color:WGR}),new D.TextRun({children:[D.PageNumber.CURRENT],font:'Arial',size:13,color:WG,bold:true})],border:{top:{style:D.BorderStyle.SINGLE,size:2,color:WG}}})]})},
       children:ch
     }]});
